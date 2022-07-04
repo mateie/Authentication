@@ -5,22 +5,22 @@ import axios, { type Axios, type AxiosRequestConfig, type AxiosError, type Axios
 
 //interface
 
-interface RsoAuthError {
+interface RsoAxiosError {
     errorCode: string;
     message: string;
     data: any;
 }
 
-interface RsoAuthRequestResponse<RsoAuthRequestReturn = any> {
+interface RsoAxiosResponse<RsoAxiosReturn = any> {
     isError: boolean;
-    data: RsoAuthRequestReturn;
+    response: AxiosResponse<RsoAxiosReturn>;
     error?: AxiosError;
 }
 
-type RsoAuthRequestMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
+type RsoAxiosMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-interface RsoAuthRequestEventData {
-    method: RsoAuthRequestMethod;
+interface RsoAxiosEventData {
+    method: RsoAxiosMethod;
     url: string;
     body?: Object;
     config: AxiosRequestConfig;
@@ -28,22 +28,22 @@ interface RsoAuthRequestEventData {
 
 //event
 
-interface RsoAuthRequestEvent {
+interface RsoAxiosEvent {
     'ready': () => void;
-    'request': (data: RsoAuthRequestEventData) => void;
-    'error': (data: RsoAuthError) => void;
+    'request': (data: RsoAxiosEventData) => void;
+    'error': (data: RsoAxiosError) => void;
 }
 
-declare interface RsoRequestClient {
-    emit<EventName extends keyof RsoAuthRequestEvent>(name: EventName, ...args: Parameters<RsoAuthRequestEvent[EventName]>): any;
-    on<EventName extends keyof RsoAuthRequestEvent>(name: EventName, callback: RsoAuthRequestEvent[EventName]): any;
-    once<EventName extends keyof RsoAuthRequestEvent>(name: EventName, callback: RsoAuthRequestEvent[EventName]): any;
-    off<EventName extends keyof RsoAuthRequestEvent>(name: EventName, callback?: RsoAuthRequestEvent[EventName]): any;
+declare interface RsoAxios {
+    emit<EventName extends keyof RsoAxiosEvent>(name: EventName, ...args: Parameters<RsoAxiosEvent[EventName]>): any;
+    on<EventName extends keyof RsoAxiosEvent>(name: EventName, callback: RsoAxiosEvent[EventName]): any;
+    once<EventName extends keyof RsoAxiosEvent>(name: EventName, callback: RsoAxiosEvent[EventName]): any;
+    off<EventName extends keyof RsoAxiosEvent>(name: EventName, callback?: RsoAxiosEvent[EventName]): any;
 }
 
 //class
 
-class RsoRequestClient extends EventEmitter {
+class RsoAxios extends EventEmitter {
     // constructor
 
     public theAxios: Axios;
@@ -68,44 +68,20 @@ class RsoRequestClient extends EventEmitter {
     /**
      * 
      * @param {AxiosError} error Axios Error
-     * @returns {RsoAuthRequestResponse}
+     * @returns {RsoAxiosResponse}
      */
-    private errorHandler(error: AxiosError): RsoAuthRequestResponse<any> {
-        //event
+    private errorHandler(error: AxiosError): RsoAxiosResponse {
         this.emit('error', {
-            errorCode: 'RsoAuth_Request_Error',
+            errorCode: 'RsoAxios_Request_Error',
             message: error.message,
             data: error,
         })
 
-        //data
-        if (error.response && error.response.data) {
-            return {
-                isError: error.isAxiosError,
-                data: error.response.data,
-                error: error,
-            }
-        }
-
-        if (error.response && error.response.status && error.response.statusText) {
-            return {
-                isError: error.isAxiosError,
-                data: {
-                    errorCode: error.response.status,
-                    message: error.response.statusText,
-                },
-                error: error,
-            }
-        }
-
         return {
             isError: error.isAxiosError,
-            data: {
-                errorCode: error.name,
-                message: error.message,
-            },
+            response: error.response as AxiosResponse,
             error: error,
-        }
+        };
     }
 
     // request
@@ -113,13 +89,13 @@ class RsoRequestClient extends EventEmitter {
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAuthRequestResponse>}
+    * @returns {Promise<RsoAxiosResponse>}
     */
-    public async get(url: string, config: AxiosRequestConfig = {}): Promise<RsoAuthRequestResponse<any>> {
+    public async get(url: string, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAuthRequestEventData = {
+        const RequestData: RsoAxiosEventData = {
             method: 'get',
             url: url,
             config: config,
@@ -131,17 +107,13 @@ class RsoRequestClient extends EventEmitter {
             return this.errorHandler(error);
 
         }).then((response: AxiosResponse) => {
-            if (_error) {
-                return response;
-            } else {
-                return response.data;
-            }
+            return response;
         });
 
         //return
         return {
             isError: _error,
-            data: _request,
+            response: _request,
         };
     }
 
@@ -149,13 +121,13 @@ class RsoRequestClient extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAuthRequestResponse>}
+    * @returns {Promise<RsoAxiosResponse>}
     */
-    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAuthRequestResponse<any>> {
+    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAuthRequestEventData = {
+        const RequestData: RsoAxiosEventData = {
             method: 'post',
             url: url,
             body: body,
@@ -168,17 +140,13 @@ class RsoRequestClient extends EventEmitter {
             return this.errorHandler(error);
 
         }).then((response: AxiosResponse) => {
-            if (_error) {
-                return response;
-            } else {
-                return response.data;
-            }
+            return response;
         });
 
         //return
         return {
             isError: _error,
-            data: _request,
+            response: _request,
         };
     }
 
@@ -186,13 +154,13 @@ class RsoRequestClient extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAuthRequestResponse>}
+    * @returns {Promise<RsoAxiosResponse>}
     */
-    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAuthRequestResponse<any>> {
+    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAuthRequestEventData = {
+        const RequestData: RsoAxiosEventData = {
             method: 'put',
             url: url,
             body: body,
@@ -205,17 +173,13 @@ class RsoRequestClient extends EventEmitter {
             return this.errorHandler(error);
 
         }).then((response: AxiosResponse) => {
-            if (_error) {
-                return response;
-            } else {
-                return response.data;
-            }
+            return response;
         });
 
         //return
         return {
             isError: _error,
-            data: _request,
+            response: _request,
         };
     }
 
@@ -223,13 +187,13 @@ class RsoRequestClient extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAuthRequestResponse>}
+    * @returns {Promise<RsoAxiosResponse>}
     */
-    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAuthRequestResponse<any>> {
+    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAuthRequestEventData = {
+        const RequestData: RsoAxiosEventData = {
             method: 'patch',
             url: url,
             body: body,
@@ -242,30 +206,26 @@ class RsoRequestClient extends EventEmitter {
             return this.errorHandler(error);
 
         }).then((response: AxiosResponse) => {
-            if (_error) {
-                return response;
-            } else {
-                return response.data;
-            }
+            return response;
         });
 
         //return
         return {
             isError: _error,
-            data: _request,
+            response: _request,
         };
     }
 
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAuthRequestResponse>}
+    * @returns {Promise<RsoAxiosResponse>}
     */
-    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<RsoAuthRequestResponse<any>> {
+    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAuthRequestEventData = {
+        const RequestData: RsoAxiosEventData = {
             method: 'delete',
             url: url,
             config: config,
@@ -277,21 +237,22 @@ class RsoRequestClient extends EventEmitter {
             return this.errorHandler(error);
 
         }).then((response: AxiosResponse) => {
-            if (_error) {
-                return response;
-            } else {
-                return response.data;
-            }
+            return response;
         });
 
         //return
         return {
             isError: _error,
-            data: _request,
+            response: _request,
         };
     }
 }
 
 //export
-export { RsoRequestClient };
-export type { RsoAuthError, RsoAuthRequestResponse, RsoAuthRequestMethod, RsoAuthRequestEventData, RsoAuthRequestEvent };
+
+export {
+    RsoAxios
+};
+export type {
+    RsoAxiosError, RsoAxiosResponse, RsoAxiosMethod, RsoAxiosEventData, RsoAxiosEvent
+};

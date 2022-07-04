@@ -12,7 +12,7 @@ import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 import type { AxiosRequestConfig } from "axios";
 import { RsoAxios, type RsoAxiosResponse } from "../client/Axios";
 
-class RsoAuthMultifactor {
+class RsoAuthUser {
     private options: { config: RsoOptions, data: RsoAuthType };
     
     private cookie: CookieJar;
@@ -24,7 +24,6 @@ class RsoAuthMultifactor {
         this.cookie = CookieJar.fromJSON(JSON.stringify(options.data.cookie.jar));
         const _AxiosConfig: AxiosRequestConfig = {
             headers: {
-                Cookie: this.options.data.cookie.ssid,
                 "X-Riot-ClientVersion": this.options.config.client?.version || CONFIG_ClientVersion,
                 "X-Riot-ClientPlatform": toUft8(JSON.stringify(this.options.config.client?.platform || CONFIG_ClientPlatform)),
             },
@@ -37,20 +36,48 @@ class RsoAuthMultifactor {
 
     //auth
 
-    public async TwoFactor(verificationCode: number) {
+    public async LoginForm(username: string, password: string) {
+        //cookie
+
+        const CookieResponse: RsoAxiosResponse = await this.RsoAxios.post('https://auth.riotgames.com/api/v1/authorization', {
+            client_id: "play-valorant-web-prod",
+            nonce: 1,
+            redirect_uri: "https://playvalorant.com/opt_in",
+            response_mode: "query",
+            response_type: "token id_token",
+            scope: "account openid",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!CookieResponse.response.headers["set-cookie"]) {
+            throw new Error(
+                '<cookie> Cookie is undefined'
+            );
+        }
+
+        const asid_cookie = CookieResponse.response.headers["set-cookie"].find((element: string) => /^asid/.test(element));
+
+        if (!asid_cookie) {
+            throw new Error(
+                '<asid> Cookie is undefined'
+            );
+        }
+
         //token
 
         const TokenResponse: RsoAxiosResponse<RsoAuthResponse> = await this.RsoAxios.put('https://auth.riotgames.com/api/v1/authorization', {
-            "type": "multifactor",
-            "code": String(verificationCode),
-            "rememberDevice": true,
+            'type': 'auth',
+            'username': username,
+            'password': password,
+            'remember': true,
+        }, {
+            headers: {
+                Cookie: asid_cookie,
+            }
         });
-
-        if (TokenResponse.isError === false) {
-            this.options.data.multifactor = false;
-        } else {
-            this.options.data.isError = true;
-        }
 
         //auth
 
@@ -58,8 +85,14 @@ class RsoAuthMultifactor {
 
         return await (new RsoAuthClient(this.options)).fromResponse(TokenResponse);
     }
+
+    public async Token(token: string) {
+        throw new Error(
+            'In-Dev coming soon...'
+        );
+    }
 }
 
 export {
-    RsoAuthMultifactor
+    RsoAuthUser
 };

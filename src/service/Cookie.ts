@@ -12,7 +12,7 @@ import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 import type { AxiosRequestConfig } from "axios";
 import { RsoAxios, type RsoAxiosResponse } from "../client/Axios";
 
-class RsoAuthMultifactor {
+class RsoAuthCookie {
     private options: { config: RsoOptions, data: RsoAuthType };
     
     private cookie: CookieJar;
@@ -37,29 +37,45 @@ class RsoAuthMultifactor {
 
     //auth
 
-    public async TwoFactor(verificationCode: number) {
+    public async ReAuth() {
         //token
 
-        const TokenResponse: RsoAxiosResponse<RsoAuthResponse> = await this.RsoAxios.put('https://auth.riotgames.com/api/v1/authorization', {
-            "type": "multifactor",
-            "code": String(verificationCode),
-            "rememberDevice": true,
+        const TokenResponse: RsoAxiosResponse<RsoAuthResponse> = await this.RsoAxios.post('https://auth.riotgames.com/api/v1/authorization', {
+            client_id: "play-valorant-web-prod",
+            nonce: 1,
+            redirect_uri: "https://playvalorant.com/opt_in",
+            response_mode: "query",
+            response_type: "token id_token",
+            scope: "account openid",
+        }, {
+            headers: {
+                Cookie: this.options.data.cookie.ssid,
+                'Content-Type': 'application/json',
+            },
         });
 
-        if (TokenResponse.isError === false) {
-            this.options.data.multifactor = false;
-        } else {
-            this.options.data.isError = true;
+        if (!TokenResponse.response.headers["set-cookie"]) {
+            throw new Error(
+                '<cookie> Cookie is undefined'
+            );
+        }
+
+        const ssid_cookie = TokenResponse.response.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
+
+        if (!ssid_cookie) {
+            throw new Error(
+                '<ssid> Cookie is undefined'
+            );
         }
 
         //auth
 
-        this.options.data.cookie.jar = this.cookie.toJSON();
+        this.options.data.cookie.ssid = ssid_cookie;
 
         return await (new RsoAuthClient(this.options)).fromResponse(TokenResponse);
     }
 }
 
 export {
-    RsoAuthMultifactor
+    RsoAuthCookie
 };

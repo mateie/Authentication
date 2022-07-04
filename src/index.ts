@@ -1,4 +1,21 @@
-export { WrapperClient as Client } from "./client/Client";
+// import
 
-export type { ValWrapperClient, ValWrapperClientEvent, ValWrapperClientPlatfrom, ValWrapperConfig } from "./client/Client";
-export type { ValWrapperAuth, ValWrapperAuthExtend } from "./auth/Account";
+import {
+    RsoEngine,
+    type RsoAuthType, type RsoClientPlatfrom, type RsoOptions
+} from "./client/Engine";
+
+import {
+    RsoClient
+} from "./client/Client";
+
+// export
+
+export {
+    RsoEngine,
+    type RsoAuthType, type RsoClientPlatfrom, type RsoOptions
+};
+
+export {
+    RsoClient
+};

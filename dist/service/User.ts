@@ -1,27 +1,15 @@
 //import
-import { CookieJar } from 'tough-cookie';
-import { RsoRequestClient, RsoAuthRequestResponse } from '../client/Axios';
 
-import { AuthFlow } from "./AuthFlow";
+import { CookieJar } from 'tough-cookie';
+import type { RsoAuthRequestResponse } from '../client/Axios';
+
+import { RsoAuthEngine } from '../client/Engine';
+
+import { RsoAuthFlow } from "./AuthFlow";
 
 //interface
 
-interface RsoAuthAuth {
-    cookie: CookieJar.Serialized;
-    access_token: string;
-    id_token:string;
-    expires_in: number;
-    token_type: string;
-    entitlements_token: string;
-    region: {
-        pbe: string,
-        live: string,
-    };
-    multifactor: boolean;
-    isError: boolean;
-}
-
-interface RsoAuthAuthExtend {
+interface RsoAuthExtend {
     client: {
         version: string,
         platform: string,
@@ -34,8 +22,11 @@ interface RsoAuthAuthExtend {
 
 //class
 
-class Account {
-    private cookie:CookieJar;
+class RsoUserAuth {
+    private cookie: {
+        jar: CookieJar,
+        ssid: string,
+    };
     private access_token:string;
     private id_token:string;
     private expires_in:number;
@@ -50,10 +41,13 @@ class Account {
     
     /**
      * Class Constructor
-     * @param {RsoAuthAuth} data Authentication Data 
+     * @param {RsoAuth} data Authentication Data 
      */
-    public constructor(data: RsoAuthAuth) {
-        this.cookie = CookieJar.fromJSON(JSON.stringify(data.cookie));
+    public constructor(data: RsoAuth) {
+        this.cookie = {
+            jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
+            ssid: data.cookie.ssid,
+        };
         this.access_token = data.access_token;
         this.id_token = data.id_token;
         this.expires_in = data.expires_in;
@@ -67,11 +61,13 @@ class Account {
     /**
      * @param {String} username Riot Account Username (not email)
      * @param {String} password Riot Account Password
-     * @param {RsoAuthAuthExtend} extendsData Extradata of auth
-     * @returns {Promise<RsoAuthAuth>}
+     * @param {RsoAuthExtend} extendsData Extradata of auth
+     * @returns {Promise<RsoAuth>}
      */
-     public async execute(username:string, password:string, extendsData:RsoAuthAuthExtend):Promise<RsoAuthAuth> {
-        await extendsData.RequestClient.post('https://auth.riotgames.com/api/v1/authorization', {
+     public async execute(username:string, password:string, extendsData:RsoAuthExtend):Promise<RsoAuth> {
+        const RequestClient = RsoAuthEngine.RequestClientCookie(extendsData);
+
+        await RequestClient.post('https://auth.riotgames.com/api/v1/authorization', {
             "client_id": "play-valorant-web-prod",
             "nonce": "1",
             "redirect_uri": "https://playvalorant.com/opt_in",
@@ -81,34 +77,37 @@ class Account {
         }, {
             headers: {
                 'Content-Type': 'application/json',
-                'User-Agent': String(extendsData.UserAgent),
             },
         });
-        this.cookie = new CookieJar(extendsData.RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
-            rejectPublicSuffixes: extendsData.RequestClient.theAxios.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
+
+        this.cookie.jar = new CookieJar(RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
+            rejectPublicSuffixes: RequestClient.theAxios.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
         });
 
         //ACCESS TOKEN
-        const auth_response:ValorantApiRequestResponse<any> = await extendsData.RequestClient.put('https://auth.riotgames.com/api/v1/authorization', {
+        const auth_response:RsoAuthRequestResponse<any> = await RequestClient.put('https://auth.riotgames.com/api/v1/authorization', {
             'type': 'auth',
             'username': String(username),
             'password': String(password),
             'remember': true,
         });
 
-        this.cookie = new CookieJar(extendsData.RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
-            rejectPublicSuffixes: extendsData.RequestClient.theAxios.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
+        this.cookie.jar = new CookieJar(RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
+            rejectPublicSuffixes: RequestClient.theAxios.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
         });
-        return await AuthFlow.execute(this.toJSON(), auth_response, extendsData);
+        return await RsoAuthFlow.execute(this.toJSON(), auth_response, extendsData);
     }
 
     /**
      * 
-     * @returns {RsoAuthAuth}
+     * @returns {RsoAuth}
      */
-     public toJSON():RsoAuthAuth {
+     public toJSON():RsoAuth {
         return {
-            cookie: this.cookie.toJSON(),
+            cookie: {
+                jar: this.cookie.jar.toJSON(),
+                ssid: this.cookie.ssid,
+            },
             access_token: this.access_token,
             id_token: this.id_token,
             expires_in: this.expires_in,
@@ -121,14 +120,14 @@ class Account {
     }
 
     /**
-     * @param {RsoAuthAuth} data Authentication Data
+     * @param {RsoAuth} data Authentication Data
      * @param {String} username Riot Account Username
      * @param {String} password Riot Account Password
-     * @param {RsoAuthAuthExtend} extendsData Extradata of auth
-     * @returns {Promise<RsoAuthAuth>}
+     * @param {RsoAuthExtend} extendsData Extradata of auth
+     * @returns {Promise<RsoAuth>}
      */
-     public static async login(data:RsoAuthAuth, username:string, password:string, extendsData:RsoAuthAuthExtend):Promise<RsoAuthAuth> {
-        const NewAccount:Account = new Account(data);
+     public static async login(data:RsoAuth, username:string, password:string, extendsData:RsoAuthExtend):Promise<RsoAuth> {
+        const NewAccount:RsoUserAuth = new RsoUserAuth(data);
 
         try {
             return await NewAccount.execute(username, password, extendsData);
@@ -141,5 +140,5 @@ class Account {
 }
 
 //export
-export { Account };
-export type { RsoAuthAuth, RsoAuthAuthExtend };
+export { RsoUserAuth };
+export type { RsoAuthExtend };

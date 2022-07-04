@@ -2,7 +2,7 @@
 import { CookieJar } from 'tough-cookie';
 import type { ValRequestClient } from '@valapi/lib';
 
-import type { RsoAuthAuth, RsoAuthAuthExtend } from './Account';
+import type { RsoAuth, RsoAuthExtend } from './Account';
 import { AuthFlow } from "./AuthFlow";
 
 import axios, { type AxiosRequestConfig } from 'axios';
@@ -13,7 +13,10 @@ import axios, { type AxiosRequestConfig } from 'axios';
  * * Not Recommend
  */
 class CookieAuth {
-    private cookie: CookieJar;
+    private cookie: {
+        jar: CookieJar,
+        ssid: string,
+    };
     private access_token: string;
     private id_token: string;
     private expires_in: number;
@@ -28,14 +31,17 @@ class CookieAuth {
 
     /**
      * Class Constructor
-     * @param {RsoAuthAuth} data Account toJSON data
+     * @param {RsoAuth} data Account toJSON data
      */
-    public constructor(data: RsoAuthAuth) {
+    public constructor(data: RsoAuth) {
         if (data.multifactor) {
             throw new Error('This Account is have a Multifactor');
         }
 
-        this.cookie = CookieJar.fromJSON(JSON.stringify(data.cookie));
+        this.cookie = {
+            jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
+            ssid: data.cookie.ssid,
+        };
         this.access_token = data.access_token;
         this.id_token = data.id_token;
         this.expires_in = data.expires_in;
@@ -107,10 +113,10 @@ class CookieAuth {
     }
 
     /**
-     * @param {RsoAuthAuthExtend} extendsData Extradata of auth
+     * @param {RsoAuthExtend} extendsData Extradata of auth
      * @returns {Promise<any>}
      */
-    public async execute(extendsData:RsoAuthAuthExtend, axiosConfig:AxiosRequestConfig): Promise<any> {
+    public async execute(extendsData:RsoAuthExtend, axiosConfig:AxiosRequestConfig): Promise<any> {
         if(axiosConfig.maxRedirects !== 1 && axiosConfig.maxRedirects !== 0) {
             axiosConfig.maxRedirects = 0;
         }
@@ -147,7 +153,7 @@ class CookieAuth {
             }
         }
 
-        this.cookie = new CookieJar(axiosClient.defaults.httpsAgent.jar?.store, {
+        this.cookie.jar = new CookieJar(axiosClient.defaults.httpsAgent.jar?.store, {
             rejectPublicSuffixes: axiosClient.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
         });
         return await AuthFlow.fromUrl(this.toJSON(), _URL, extendsData);
@@ -155,11 +161,14 @@ class CookieAuth {
 
     /**
      * 
-     * @returns {RsoAuthAuth}
+     * @returns {RsoAuth}
      */
-    public toJSON(): RsoAuthAuth {
+    public toJSON(): RsoAuth {
         return {
-            cookie: this.cookie.toJSON(),
+            cookie: {
+                jar: this.cookie.jar.toJSON(),
+                ssid: this.cookie.ssid,
+            },
             access_token: this.access_token,
             id_token: this.id_token,
             expires_in: this.expires_in,
@@ -172,12 +181,12 @@ class CookieAuth {
     }
 
     /**
-     * @param {RsoAuthAuth} data ValAuth_Account toJSON data
-     * @param {RsoAuthAuthExtend} extendsData Extradata of auth
+     * @param {RsoAuth} data ValAuth_Account toJSON data
+     * @param {RsoAuthExtend} extendsData Extradata of auth
      * @param {AxiosRequestConfig} axiosConfig Axios Config
-     * @returns {Promise<RsoAuthAuth>}
+     * @returns {Promise<RsoAuth>}
      */
-    public static async reauth(data: RsoAuthAuth, extendsData:RsoAuthAuthExtend, axiosConfig:AxiosRequestConfig): Promise<RsoAuthAuth> {
+    public static async reauth(data: RsoAuth, extendsData:RsoAuthExtend, axiosConfig:AxiosRequestConfig): Promise<RsoAuth> {
         const CookieAccount: CookieAuth = new CookieAuth(data);
 
         try {

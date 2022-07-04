@@ -1,21 +1,20 @@
 //import
 
 import { CookieJar } from 'tough-cookie';
-import { 
-    HttpsCookieAgent, HttpCookieAgent, 
-    CookieAgent,
-} from 'http-cookie-agent/http';
-import type http from 'node:http';
-import type https from 'node:https';
+import { RsoAuthRequestResponse } from '../client/Axios';
 
-import { RsoRequestClient, RsoAuthRequestResponse } from '../client/Axios';
+import { RsoAuthEngine } from '../client/Engine';
 
-import type { RsoAuthAuth, RsoAuthAuthExtend } from './Account';
+import type { RsoAuth } from '../client/Client';
+import type { RsoAuthExtend } from './User';
 
 //class
 
-class AuthFlow {
-    private cookie: CookieJar;
+class RsoAuthFlow {
+    private cookie: {
+        jar: CookieJar,
+        ssid: string,
+    };
     private access_token: string;
     private id_token: string;
     private expires_in: number;
@@ -28,17 +27,15 @@ class AuthFlow {
     public multifactor: boolean;
     public isError: boolean;
 
-    private clientVersion: string;
-    private clientPlatfrom: string;
-
     /**
      * Class Constructor
-     * @param {RsoAuthAuth} data Account toJSON data
-     * @param {String} clientVersion Client Version
-     * @param {String} clientPlatfrom Client Platform
+     * @param {RsoAuth} data Account toJSON data
      */
-    public constructor(data: RsoAuthAuth, clientVersion: string, clientPlatfrom: string) {
-        this.cookie = CookieJar.fromJSON(JSON.stringify(data.cookie));
+    public constructor(data: RsoAuth) {
+        this.cookie = {
+            jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
+            ssid: data.cookie.ssid,
+        };
         this.access_token = data.access_token;
         this.id_token = data.id_token;
         this.expires_in = data.expires_in;
@@ -47,9 +44,6 @@ class AuthFlow {
         this.region = data.region;
         this.multifactor = data.multifactor;
         this.isError = data.isError;
-
-        this.clientVersion = clientVersion;
-        this.clientPlatfrom = clientPlatfrom;
     }
 
     /**
@@ -57,9 +51,11 @@ class AuthFlow {
      * @param {String} UserAgent User Agent
      * @param {ValRequestClient} RequestClient Request Client
      * @param {Boolean} lockRegion Lock Region
-     * @returns {Promise<RsoAuthAuth>}
+     * @returns {Promise<RsoAuth>}
      */
-    public async execute(auth_response: RsoAuthRequestResponse, UserAgent: string, RequestClient: RsoRequestClient, lockRegion: Boolean): Promise<RsoAuthAuth> {
+    public async execute(auth_response: RsoAuthRequestResponse, extendsData: RsoAuthExtend): Promise<RsoAuth> {
+        const RequestClient = RsoAuthEngine.RequestClientCookie(extendsData);
+
         if (auth_response.isError) {
             this.isError = true;
             return this.toJSON();
@@ -104,23 +100,18 @@ class AuthFlow {
         const entitlements_response: RsoAuthRequestResponse<any> = await RequestClient.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
             headers: {
                 'Authorization': `${this.token_type} ${this.access_token}`,
-                'User-Agent': String(UserAgent),
             },
         });
 
         this.entitlements_token = entitlements_response.data.entitlements_token;
 
         //REGION
-        if (lockRegion === false) {
-            let region_response: RsoAuthRequestResponse<any> = await RequestClient.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+        let region_response: RsoAuthRequestResponse<any> = await RequestClient.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
                 "id_token": this.id_token,
             }, {
                 headers: {
                     'Authorization': `${this.token_type} ${this.access_token}`,
                     'X-Riot-Entitlements-JWT': this.entitlements_token,
-                    'X-Riot-ClientVersion': this.clientVersion,
-                    'X-Riot-ClientPlatform': this.clientPlatfrom,
-                    'User-Agent': String(UserAgent),
                 }
             });
 
@@ -138,9 +129,8 @@ class AuthFlow {
 
             this.region.pbe = region_response.data.affinities?.pbe || 'na';
             this.region.live = region_response.data.affinities?.live || 'na';
-        }
 
-        this.cookie = new CookieJar(RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
+        this.cookie.jar = new CookieJar(RequestClient.theAxios.defaults.httpsAgent.jar?.store, {
             rejectPublicSuffixes: RequestClient.theAxios.defaults.httpsAgent.options?.jar?.rejectPublicSuffixes || undefined,
         });
         return this.toJSON();
@@ -148,11 +138,14 @@ class AuthFlow {
 
     /**
      * 
-     * @returns {RsoAuthAuth}
+     * @returns {RsoAuth}
      */
-    public toJSON(): RsoAuthAuth {
+    public toJSON(): RsoAuth {
         return {
-            cookie: this.cookie.toJSON(),
+            cookie: {
+                jar: this.cookie.jar.toJSON(),
+                ssid: this.cookie.ssid,
+            },
             access_token: this.access_token,
             id_token: this.id_token,
             expires_in: this.expires_in,
@@ -165,16 +158,16 @@ class AuthFlow {
     }
 
     /**
-     * @param {RsoAuthAuth} data Account toJSON data
+     * @param {RsoAuth} data Account toJSON data
      * @param {ValorantApiRequestResponse} auth_response First Auth Response
-     * @param {RsoAuthAuthExtend} extendsData Extradata of auth
-     * @returns {Promise<RsoAuthAuth>}
+     * @param {RsoAuthExtend} extendsData Extradata of auth
+     * @returns {Promise<RsoAuth>}
      */
-    public static async execute(data: RsoAuthAuth, auth_response: RsoAuthRequestResponse, extendsData:RsoAuthAuthExtend): Promise<RsoAuthAuth> {
-        const _newAuthFlow: AuthFlow = new AuthFlow(data, extendsData.client.version, extendsData.client.platform);
+    public static async execute(data: RsoAuth, auth_response: RsoAuthRequestResponse, extendsData:RsoAuthExtend): Promise<RsoAuth> {
+        const _newAuthFlow: RsoAuthFlow = new RsoAuthFlow(data);
 
         try {
-            return await _newAuthFlow.execute(auth_response, extendsData.UserAgent, extendsData.RequestClient, extendsData.lockRegion);
+            return await _newAuthFlow.execute(auth_response, extendsData);
         } catch (error) {
             _newAuthFlow.isError = true;
 
@@ -182,27 +175,13 @@ class AuthFlow {
         }
     }
 
-    public static getHttpAgent(cookie: { jar: CookieJar, ssid: string }): { http: CookieAgent<http.Agent>, https: CookieAgent<https.Agent> } {
-        const ciphers: Array<string> = [
-            'TLS_CHACHA20_POLY1305_SHA256',
-            'TLS_AES_128_GCM_SHA256',
-            'TLS_AES_256_GCM_SHA384',
-            'TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256'
-        ];
-
-        return {
-            https: new HttpsCookieAgent({ cookies: { jar: cookie.jar }, keepAlive: true, ciphers: ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' }),
-            http: new HttpCookieAgent({ cookies: { jar: cookie.jar }, keepAlive: true }),
-        };
-    }
-
     // /**
-    //  * @param {RsoAuthAuth} data Account toJSON data
+    //  * @param {RsoAuth} data Account toJSON data
     //  * @param {String} url Url of First Auth Response
-    //  * @param {RsoAuthAuthExtend} extendsData Extradata of auth
-    //  * @returns {Promise<RsoAuthAuth>}
+    //  * @param {RsoAuthExtend} extendsData Extradata of auth
+    //  * @returns {Promise<RsoAuth>}
     //  */
-    // public static async fromUrl(data: RsoAuthAuth, url: string, extendsData:RsoAuthAuthExtend): Promise<RsoAuthAuth> {
+    // public static async fromUrl(data: RsoAuth, url: string, extendsData:RsoAuthExtend): Promise<RsoAuth> {
     //     const _newAuthFlow: AuthFlow = new AuthFlow(data, extendsData.clientVersion, extendsData.clientPlatform);
 
     //     if (!url.includes('https://playvalorant.com/opt_in')) {
@@ -232,4 +211,4 @@ class AuthFlow {
 }
 
 //export
-export { AuthFlow };
+export { RsoAuthFlow };
