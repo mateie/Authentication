@@ -1,7 +1,7 @@
 {
-  "name": "riot-games-auth",
+  "name": "@valapi/auth",
   "version": "1.0.0",
-  "description": "Unofficial Riot Sign-On for NodeJS",
+  "description": "Valorant Authentication for NodeJS",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
