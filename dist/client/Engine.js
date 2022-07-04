@@ -1,12 +1,10 @@
 "use strict";
 //import
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONFIG_DEFAULT = exports.CONFIG_Ciphers = exports.CONFIG_UserAgent = exports.CONFIG_ClientVersion = exports.CONFIG_ClientPlatform = exports.RsoEngine = void 0;
+const tslib_1 = require("tslib");
 const tough_cookie_1 = require("tough-cookie");
-const toUft8_1 = __importDefault(require("../utils/toUft8"));
+const toUft8_1 = tslib_1.__importDefault(require("../utils/toUft8"));
 //class
 const CONFIG_ClientVersion = `release-05.00-shipping-11-729462`;
 exports.CONFIG_ClientVersion = CONFIG_ClientVersion;

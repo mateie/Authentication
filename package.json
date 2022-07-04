@@ -1,7 +1,7 @@
 {
-  "name": "riotgames-auth",
+  "name": "riot-games-auth",
   "version": "1.0.0",
-  "description": "RSO Auth",
+  "description": "Unofficial Riot Sign-On for NodeJS",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
