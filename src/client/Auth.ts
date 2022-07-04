@@ -1,20 +1,20 @@
 // import
 
 import {
-    RsoEngine,
+    ValRsoEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers, CONFIG_UserAgent,
-    type RsoOptions, type RsoAuthType
+    type ValRsoOptions, type ValRsoAuthType
 } from "../client/Engine";
 
 import toUft8 from "../utils/toUft8";
 
-import { RsoAxios, type RsoAxiosResponse } from "../client/Axios";
+import { ValRsoAxios, type ValRsoAxiosResponse } from "../client/Axios";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 import type { AxiosRequestConfig } from "axios";
 
 // interface
 
-type RsoAuthResponse = {
+type ValRsoAuthResponse = {
     type: "response";
     response: {
         mode: string,
@@ -38,11 +38,11 @@ type RsoAuthResponse = {
 
 // class
 
-class RsoAuthClient extends RsoEngine {
-    private options: { config: RsoOptions, data: RsoAuthType };
-    private RsoAxios: RsoAxios;
+class ValRsoAuthClient extends ValRsoEngine {
+    private options: { config: ValRsoOptions, data: ValRsoAuthType };
+    private ValRsoAxios: ValRsoAxios;
 
-    public constructor(options: { config: RsoOptions, data: RsoAuthType }) {
+    public constructor(options: { config: ValRsoOptions, data: ValRsoAuthType }) {
         super()
         this.build({ config: options.config, data: options.data });
 
@@ -61,7 +61,7 @@ class RsoAuthClient extends RsoEngine {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
         };
 
-        this.RsoAxios = new RsoAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValRsoAxios = new ValRsoAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     // auth
@@ -89,7 +89,7 @@ class RsoAuthClient extends RsoEngine {
         this.session_state = String(new URLSearchParams(Search_path).get('session_state'));
 
         //ENTITLEMENTS
-        const EntitlementsResponse: RsoAxiosResponse = await this.RsoAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
+        const EntitlementsResponse: ValRsoAxiosResponse = await this.ValRsoAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
             headers: {
                 'Authorization': `${this.token_type} ${this.access_token}`,
             },
@@ -98,7 +98,7 @@ class RsoAuthClient extends RsoEngine {
         this.entitlements_token = EntitlementsResponse.response.data.entitlements_token;
 
         //REGION
-        const RegionResponse: RsoAxiosResponse = await this.RsoAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+        const RegionResponse: ValRsoAxiosResponse = await this.ValRsoAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
             id_token: this.id_token,
         }, {
             headers: {
@@ -114,11 +114,20 @@ class RsoAuthClient extends RsoEngine {
         return this.toJSON();
     }
 
-    public async fromResponse(TokenResponse: RsoAxiosResponse<RsoAuthResponse>) {
+    public async fromResponse(TokenResponse: ValRsoAxiosResponse<ValRsoAuthResponse>) {
         if (TokenResponse.isError || !TokenResponse.response.data.type) {
             this.isError = true;
 
             return this.toJSON();
+        }
+
+        //MFA
+        if (TokenResponse.response.data.type && TokenResponse.response.data.type == 'multifactor') {
+            this.multifactor = true;
+
+            return this.toJSON();
+        } else {
+            this.multifactor = false;
         }
 
         //COOKIE
@@ -138,15 +147,6 @@ class RsoAuthClient extends RsoEngine {
 
         this.cookie.ssid = ssid_cookie;
 
-        //MFA
-        if (TokenResponse.response.data.type && TokenResponse.response.data.type == 'multifactor') {
-            this.multifactor = true;
-
-            return this.toJSON();
-        } else {
-            this.multifactor = false;
-        }
-
         //URL
         if (!TokenResponse.response.data.response || !TokenResponse.response.data.response?.parameters || !TokenResponse.response.data.response?.parameters?.uri) {
             this.isError = true;
@@ -161,9 +161,9 @@ class RsoAuthClient extends RsoEngine {
 }
 
 export {
-    RsoAuthClient
+    ValRsoAuthClient
 };
 
 export type {
-    RsoAuthResponse
+    ValRsoAuthResponse
 };

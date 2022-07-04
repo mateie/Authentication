@@ -5,22 +5,22 @@ import axios, { type Axios, type AxiosRequestConfig, type AxiosError, type Axios
 
 //interface
 
-interface RsoAxiosError {
+interface ValRsoAxiosError {
     errorCode: string;
     message: string;
     data: any;
 }
 
-interface RsoAxiosResponse<RsoAxiosReturn = any> {
+interface ValRsoAxiosResponse<ValRsoAxiosReturn = any> {
     isError: boolean;
-    response: AxiosResponse<RsoAxiosReturn>;
+    response: AxiosResponse<ValRsoAxiosReturn>;
     error?: AxiosError;
 }
 
-type RsoAxiosMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
+type ValRsoAxiosMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
-interface RsoAxiosEventData {
-    method: RsoAxiosMethod;
+interface ValRsoAxiosEventData {
+    method: ValRsoAxiosMethod;
     url: string;
     body?: Object;
     config: AxiosRequestConfig;
@@ -28,22 +28,22 @@ interface RsoAxiosEventData {
 
 //event
 
-interface RsoAxiosEvent {
+interface ValRsoAxiosEvent {
     'ready': () => void;
-    'request': (data: RsoAxiosEventData) => void;
-    'error': (data: RsoAxiosError) => void;
+    'request': (data: ValRsoAxiosEventData) => void;
+    'error': (data: ValRsoAxiosError) => void;
 }
 
-declare interface RsoAxios {
-    emit<EventName extends keyof RsoAxiosEvent>(name: EventName, ...args: Parameters<RsoAxiosEvent[EventName]>): any;
-    on<EventName extends keyof RsoAxiosEvent>(name: EventName, callback: RsoAxiosEvent[EventName]): any;
-    once<EventName extends keyof RsoAxiosEvent>(name: EventName, callback: RsoAxiosEvent[EventName]): any;
-    off<EventName extends keyof RsoAxiosEvent>(name: EventName, callback?: RsoAxiosEvent[EventName]): any;
+declare interface ValRsoAxios {
+    emit<EventName extends keyof ValRsoAxiosEvent>(name: EventName, ...args: Parameters<ValRsoAxiosEvent[EventName]>): any;
+    on<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback: ValRsoAxiosEvent[EventName]): any;
+    once<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback: ValRsoAxiosEvent[EventName]): any;
+    off<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback?: ValRsoAxiosEvent[EventName]): any;
 }
 
 //class
 
-class RsoAxios extends EventEmitter {
+class ValRsoAxios extends EventEmitter {
     // constructor
 
     public theAxios: Axios;
@@ -68,11 +68,11 @@ class RsoAxios extends EventEmitter {
     /**
      * 
      * @param {AxiosError} error Axios Error
-     * @returns {RsoAxiosResponse}
+     * @returns {ValRsoAxiosResponse}
      */
-    private errorHandler(error: AxiosError): RsoAxiosResponse {
+    private errorHandler(error: AxiosError): ValRsoAxiosResponse {
         this.emit('error', {
-            errorCode: 'RsoAxios_Request_Error',
+            errorCode: 'ValRsoAxios_Request_Error',
             message: error.message,
             data: error,
         })
@@ -89,13 +89,13 @@ class RsoAxios extends EventEmitter {
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxiosResponse>}
     */
-    public async get(url: string, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
+    public async get(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAxiosEventData = {
+        const RequestData: ValRsoAxiosEventData = {
             method: 'get',
             url: url,
             config: config,
@@ -121,13 +121,13 @@ class RsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxiosResponse>}
     */
-    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
+    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAxiosEventData = {
+        const RequestData: ValRsoAxiosEventData = {
             method: 'post',
             url: url,
             body: body,
@@ -154,13 +154,13 @@ class RsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxiosResponse>}
     */
-    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
+    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAxiosEventData = {
+        const RequestData: ValRsoAxiosEventData = {
             method: 'put',
             url: url,
             body: body,
@@ -187,13 +187,13 @@ class RsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxiosResponse>}
     */
-    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
+    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAxiosEventData = {
+        const RequestData: ValRsoAxiosEventData = {
             method: 'patch',
             url: url,
             body: body,
@@ -219,13 +219,13 @@ class RsoAxios extends EventEmitter {
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<RsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxiosResponse>}
     */
-    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<RsoAxiosResponse> {
+    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
         //setup
         let _error = false;
 
-        const RequestData: RsoAxiosEventData = {
+        const RequestData: ValRsoAxiosEventData = {
             method: 'delete',
             url: url,
             config: config,
@@ -251,8 +251,8 @@ class RsoAxios extends EventEmitter {
 //export
 
 export {
-    RsoAxios
+    ValRsoAxios
 };
 export type {
-    RsoAxiosError, RsoAxiosResponse, RsoAxiosMethod, RsoAxiosEventData, RsoAxiosEvent
+    ValRsoAxiosError, ValRsoAxiosResponse, ValRsoAxiosMethod, ValRsoAxiosEventData, ValRsoAxiosEvent
 };

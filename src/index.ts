@@ -1,25 +1,25 @@
 // import
 
 import {
-    RsoEngine,
-    type RsoAuthType, type RsoClientPlatfrom, type RsoOptions
+    ValRsoEngine,
+    type ValRsoAuthType, type ValRsoClientPlatfrom, type ValRsoOptions
 } from "./client/Engine";
 
 import {
-    RsoClient,
-    type RsoExpire
+    ValRsoClient,
+    type ValRsoExpire
 } from "./client/Client";
 
 // export
 
 export {
-    RsoEngine,
-    type RsoAuthType, type RsoClientPlatfrom, type RsoOptions
+    ValRsoEngine,
+    type ValRsoAuthType, type ValRsoClientPlatfrom, type ValRsoOptions
 };
 
 export {
-    RsoClient,
-    type RsoExpire
+    ValRsoClient,
+    type ValRsoExpire
 };
 
-export default RsoClient;
+export default ValRsoClient;

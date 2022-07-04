@@ -1,18 +1,19 @@
 //import
 
 import {
-    RsoEngine,
-    type RsoOptions
+    ValRsoEngine,
+    type ValRsoOptions,
+    type ValRsoAuthType,
 } from "./Engine";
 import { CookieJar } from "tough-cookie";
 
-import { RsoAuthUser } from "../service/User";
-import { RsoAuthMultifactor } from "../service/Multifactor";
-import { RsoAuthCookie } from "../service/Cookie";
+import { ValRsoAuthUser } from "../service/User";
+import { ValRsoAuthMultifactor } from "../service/Multifactor";
+import { ValRsoAuthCookie } from "../service/Cookie";
 
 //interface
 
-type RsoExpire = {
+type ValRsoExpire = {
     name: 'cookie';
     data: {
         jar: CookieJar,
@@ -28,13 +29,13 @@ type RsoExpire = {
 
 //class
 
-class RsoClient extends RsoEngine {
+class ValRsoClient extends ValRsoEngine {
 
     /**
-     * Create a new RSO Client
-     * @param {RsoOptions} options Client Config
+     * Create a new ValRso Client
+     * @param {ValRsoOptions} options Client Config
      */
-    public constructor(options: RsoOptions = {}) {
+    public constructor(options: ValRsoOptions = {}) {
         super(options);
     }
 
@@ -47,14 +48,14 @@ class RsoClient extends RsoEngine {
      * @returns {Promise<void>}
      */
     public async login(username: string, password: string): Promise<void> {
-        const RsoUser = new RsoAuthUser({
+        const ValRsoUser = new ValRsoAuthUser({
             config: this.config,
             data: this.toJSON(),
         });
 
-        const RsoLoginAuth = await RsoUser.LoginForm(username, password);
+        const ValRsoLoginAuth = await ValRsoUser.LoginForm(username, password);
 
-        this.fromJSON(RsoLoginAuth);
+        this.fromJSON(ValRsoLoginAuth);
     }
 
     /**
@@ -63,23 +64,23 @@ class RsoClient extends RsoEngine {
      * @returns {Promise<void>}
      */
     public async verify(verificationCode: number): Promise<void> {
-        const RsoMultifactor = new RsoAuthMultifactor({
+        const ValRsoMultifactor = new ValRsoAuthMultifactor({
             config: this.config,
             data: this.toJSON(),
         });
 
-        const RsoLoginAuth = await RsoMultifactor.TwoFactor(verificationCode);
+        const ValRsoLoginAuth = await ValRsoMultifactor.TwoFactor(verificationCode);
 
-        this.fromJSON(RsoLoginAuth);
+        this.fromJSON(ValRsoLoginAuth);
     }
 
     /**
      * Reconnect to the server
      * @param force force to reload (only token)
-     * @returns {Promise<Array<RsoExpire>>}
+     * @returns {Promise<Array<ValRsoExpire>>}
      */
-    public async reload(force?: Boolean): Promise<Array<RsoExpire>> {
-        let expiresList: Array<RsoExpire> = [];
+    public async reload(force?: Boolean): Promise<Array<ValRsoExpire>> {
+        let expiresList: Array<ValRsoExpire> = [];
 
         if ((new Date().getTime()) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
             //event
@@ -111,24 +112,54 @@ class RsoClient extends RsoEngine {
             this.createAt.token = new Date().getTime();
 
             //auto
-            const RsoCookie = new RsoAuthCookie({
+            const ValRsoCookie = new ValRsoAuthCookie({
                 config: this.config,
                 data: this.toJSON(),
             });
 
-            const RsoReAuth = await RsoCookie.ReAuth();
+            const ValRsoReAuth = await ValRsoCookie.ReAuth();
 
-            this.fromJSON(RsoReAuth);
+            this.fromJSON(ValRsoReAuth);
         }
 
         return expiresList;
     }
+
+    //static
+
+    /**
+     * From {@link toJSON toJSON()} data
+     * @param {ValRsoAuthType} data {@link toJSON toJSON()} data
+     * @param {ValRsoOptions} options Client Config
+     * @returns {ValRsoClient}
+     */
+    public static fromJSON(data: ValRsoAuthType, options?: ValRsoOptions): ValRsoClient {
+        const RsoClient = new ValRsoClient(options);
+        RsoClient.fromJSON(data);
+
+        return RsoClient;
+    }
+
+    /**
+     * From ssid Cookie
+     * @param {string} cookie ssid Cookie
+     * @param {ValRsoOptions} options Client Config
+     * @returns {Promise<ValRsoClient>}
+     */
+    public static async fromCookie(cookie: string, options?: ValRsoOptions): Promise<ValRsoClient> {
+        const RsoClient = new ValRsoClient(options);
+        RsoClient.cookie.ssid = cookie;
+
+        await RsoClient.reload(true);
+
+        return RsoClient;
+    }
 }
 
 export {
-    RsoClient
+    ValRsoClient
 };
 
 export type {
-    RsoExpire
+    ValRsoExpire
 };

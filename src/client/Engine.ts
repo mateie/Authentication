@@ -7,7 +7,7 @@ import toUft8 from "../utils/toUft8";
 
 //interface
 
-interface RsoAuthType {
+interface ValRsoAuthType {
     cookie: {
         jar: CookieJar.Serialized,
         ssid: string,
@@ -32,17 +32,17 @@ interface RsoAuthType {
 
 // options
 
-interface RsoClientPlatfrom {
+interface ValRsoClientPlatfrom {
     "platformType": string;
     "platformOS": string;
     "platformOSVersion": string;
     "platformChipset": string;
 }
 
-interface RsoOptions {
+interface ValRsoOptions {
     client?: {
         version?: string,
-        platform?: RsoClientPlatfrom,
+        platform?: ValRsoClientPlatfrom,
     };
     axiosConfig?: AxiosRequestConfig,
     expiresIn?: {
@@ -54,7 +54,7 @@ interface RsoOptions {
 //class
 
 const CONFIG_ClientVersion: string = `release-05.00-shipping-11-729462`;
-const CONFIG_ClientPlatform: RsoClientPlatfrom = {
+const CONFIG_ClientPlatform: ValRsoClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,
     "platformOSVersion": `10.0.19042.1.256.64bit`,
@@ -71,7 +71,7 @@ const CONFIG_Ciphers: Array<string> = [
     'TLS_AES_128_CCM_SHA256',
 ];
 
-const CONFIG_DEFAULT: RsoOptions = {
+const CONFIG_DEFAULT: ValRsoOptions = {
     client: {
         version: CONFIG_ClientVersion,
         platform: CONFIG_ClientPlatform,
@@ -89,7 +89,7 @@ const CONFIG_DEFAULT: RsoOptions = {
     },
 }
 
-class RsoEngine {
+class ValRsoEngine {
     protected cookie: {
         jar: CookieJar,
         ssid: string,
@@ -123,15 +123,15 @@ class RsoEngine {
     /**
      * Client Config
      */
-    public config: RsoOptions
+    public config: ValRsoOptions
 
     // class
 
     /**
-     * Create a new RSO Client
-     * @param {RsoOptions} options Client Config
+     * Create a new ValRso Client
+     * @param {ValRsoOptions} options Client Config
      */
-    public constructor(options: RsoOptions = {}) {
+    public constructor(options: ValRsoOptions = {}) {
         this.cookie = {
             jar: new CookieJar(),
             ssid: '',
@@ -159,10 +159,10 @@ class RsoEngine {
     //save
 
     /**
-     * To {@link RsoAuthType Save} Data
-     * @returns {RsoAuthType}
+     * To {@link ValRsoAuthType save} data
+     * @returns {ValRsoAuthType}
      */
-    public toJSON(): RsoAuthType {
+    public toJSON(): ValRsoAuthType {
         return {
             cookie: {
                 jar: this.cookie.jar.toJSON(),
@@ -182,11 +182,11 @@ class RsoEngine {
     }
 
     /**
-     * From {@link RsoAuthType Save} Data
-     * @param {RsoAuthType} data `.toJSON()` data
+     * From {@link ValRsoAuthType save} data
+     * @param {ValRsoAuthType} data {@link toJSON toJSON()} data
      * @returns {void}
      */
-    public fromJSON(data: RsoAuthType): void {
+    public fromJSON(data: ValRsoAuthType): void {
         this.cookie = {
             jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
             ssid: data.cookie.ssid,
@@ -203,17 +203,26 @@ class RsoEngine {
         this.createAt = data.createAt;
     }
 
-    protected build(options: { config: RsoOptions, data: RsoAuthType }): void {
+    //engine
+
+    protected build(options: { config: ValRsoOptions, data: ValRsoAuthType }): void {
         this.config = options.config;
 
         this.fromJSON(options.data);
     }
+
+    public parsePlayerUuid(token: string = this.access_token): string {
+        const split_token: Array<string> = String(token).split('.');
+        const _token: { sub: string } = JSON.parse(Buffer.from(split_token[1], 'base64').toString())
+        
+        return _token.sub;
+    }
 }
 
 export {
-    RsoEngine,
+    ValRsoEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT
 };
 export type {
-    RsoAuthType, RsoClientPlatfrom, RsoOptions
+    ValRsoAuthType, ValRsoClientPlatfrom, ValRsoOptions
 };
