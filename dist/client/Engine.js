@@ -1,68 +1,25 @@
+"use strict";
 //import
-
-import { CookieJar } from "tough-cookie";
-import type { AxiosRequestConfig } from "axios";
-
-import toUft8 from "../utils/toUft8";
-
-//interface
-
-interface RsoAuthType {
-    cookie: {
-        jar: CookieJar.Serialized,
-        ssid: string,
-    };
-    access_token: string;
-    id_token: string;
-    expires_in: number;
-    token_type: string;
-    session_state: string;
-    entitlements_token: string;
-    multifactor: boolean;
-    isError: boolean;
-    region: {
-        pbe: string,
-        live: string,
-    };
-    createAt: {
-        cookie: number,
-        token: number,
-    };
-}
-
-// options
-
-interface RsoClientPlatfrom {
-    "platformType": string;
-    "platformOS": string;
-    "platformOSVersion": string;
-    "platformChipset": string;
-}
-
-interface RsoOptions {
-    client?: {
-        version?: string,
-        platform?: RsoClientPlatfrom,
-    };
-    axiosConfig?: AxiosRequestConfig,
-    expiresIn?: {
-        cookie: number,
-        token?: number,
-    };
-}
-
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CONFIG_DEFAULT = exports.CONFIG_Ciphers = exports.CONFIG_UserAgent = exports.CONFIG_ClientVersion = exports.CONFIG_ClientPlatform = exports.RsoEngine = void 0;
+const tough_cookie_1 = require("tough-cookie");
+const toUft8_1 = __importDefault(require("../utils/toUft8"));
 //class
-
-const CONFIG_ClientVersion: string = `release-05.00-shipping-11-729462`;
-const CONFIG_ClientPlatform: RsoClientPlatfrom = {
+const CONFIG_ClientVersion = `release-05.00-shipping-11-729462`;
+exports.CONFIG_ClientVersion = CONFIG_ClientVersion;
+const CONFIG_ClientPlatform = {
     "platformType": `PC`,
     "platformOS": `Windows`,
     "platformOSVersion": `10.0.19042.1.256.64bit`,
     "platformChipset": `Unknown`,
 };
-const CONFIG_UserAgent: string = `RiotClient/53.0.0.4494832.4470164 %s (Windows;10;;Professional, x64)`;
-
-const CONFIG_Ciphers: Array<string> = [
+exports.CONFIG_ClientPlatform = CONFIG_ClientPlatform;
+const CONFIG_UserAgent = `RiotClient/53.0.0.4494832.4470164 %s (Windows;10;;Professional, x64)`;
+exports.CONFIG_UserAgent = CONFIG_UserAgent;
+const CONFIG_Ciphers = [
     'TLS_CHACHA20_POLY1305_SHA256',
     'TLS_AES_128_GCM_SHA256',
     'TLS_AES_256_GCM_SHA384',
@@ -70,8 +27,8 @@ const CONFIG_Ciphers: Array<string> = [
     'TLS_AES_128_CCM_8_SHA256',
     'TLS_AES_128_CCM_SHA256',
 ];
-
-const CONFIG_DEFAULT: RsoOptions = {
+exports.CONFIG_Ciphers = CONFIG_Ciphers;
+const CONFIG_DEFAULT = {
     client: {
         version: CONFIG_ClientVersion,
         platform: CONFIG_ClientPlatform,
@@ -80,60 +37,24 @@ const CONFIG_DEFAULT: RsoOptions = {
         headers: {
             "User-Agent": CONFIG_UserAgent,
             "X-Riot-ClientVersion": CONFIG_ClientVersion,
-            "X-Riot-ClientPlatform": toUft8(JSON.stringify(CONFIG_ClientPlatform)),
+            "X-Riot-ClientPlatform": (0, toUft8_1.default)(JSON.stringify(CONFIG_ClientPlatform)),
         },
     },
-    expiresIn: { //Milliseconds
+    expiresIn: {
         cookie: 2592000000,
         token: 3600000,
     },
-}
-
+};
+exports.CONFIG_DEFAULT = CONFIG_DEFAULT;
 class RsoEngine {
-    protected cookie: {
-        jar: CookieJar,
-        ssid: string,
-    };
-    protected access_token: string;
-    protected id_token: string;
-    protected expires_in: number;
-    protected token_type: string;
-    protected session_state: string;
-    protected entitlements_token: string;
-    /**
-     * is Multifactor Account ?
-     */
-    public multifactor: boolean;
-    /**
-     * is Authentication Error ?
-     */
-    public isError: boolean;
-    /**
-     * Server Region
-     */
-    public region: {
-        pbe: string,
-        live: string,
-    };
-    protected createAt: {
-        cookie: number,
-        token: number,
-    };
-
-    /**
-     * Client Config
-     */
-    public config: RsoOptions
-
     // class
-
     /**
      * Create a new RSO Client
      * @param {RsoOptions} options Client Config
      */
-    public constructor(options: RsoOptions = {}) {
+    constructor(options = {}) {
         this.cookie = {
-            jar: new CookieJar(),
+            jar: new tough_cookie_1.CookieJar(),
             ssid: '',
         };
         this.access_token = '';
@@ -152,17 +73,14 @@ class RsoEngine {
             cookie: new Date().getTime(),
             token: new Date().getTime(),
         };
-
-        this.config = new Object({ ...CONFIG_DEFAULT, ...options });
+        this.config = new Object(Object.assign(Object.assign({}, CONFIG_DEFAULT), options));
     }
-
     //save
-
     /**
      * To {@link RsoAuthType Save} Data
      * @returns {RsoAuthType}
      */
-    public toJSON(): RsoAuthType {
+    toJSON() {
         return {
             cookie: {
                 jar: this.cookie.jar.toJSON(),
@@ -178,17 +96,16 @@ class RsoEngine {
             isError: this.isError,
             region: this.region,
             createAt: this.createAt,
-        }
+        };
     }
-
     /**
      * From {@link RsoAuthType Save} Data
      * @param {RsoAuthType} data `.toJSON()` data
      * @returns {void}
      */
-    public fromJSON(data: RsoAuthType): void {
+    fromJSON(data) {
         this.cookie = {
-            jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
+            jar: tough_cookie_1.CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
             ssid: data.cookie.ssid,
         };
         this.access_token = data.access_token;
@@ -202,18 +119,10 @@ class RsoEngine {
         this.region = data.region;
         this.createAt = data.createAt;
     }
-
-    protected build(options: { config: RsoOptions, data: RsoAuthType }): void {
+    build(options) {
         this.config = options.config;
-
         this.fromJSON(options.data);
     }
 }
-
-export {
-    RsoEngine,
-    CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT
-};
-export type {
-    RsoAuthType, RsoClientPlatfrom, RsoOptions
-};
+exports.RsoEngine = RsoEngine;
+//# sourceMappingURL=Engine.js.map

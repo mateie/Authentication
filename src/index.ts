@@ -6,7 +6,8 @@ import {
 } from "./client/Engine";
 
 import {
-    RsoClient
+    RsoClient,
+    type RsoExpire
 } from "./client/Client";
 
 // export
@@ -17,5 +18,8 @@ export {
 };
 
 export {
-    RsoClient
+    RsoClient,
+    type RsoExpire
 };
+
+export default RsoClient;

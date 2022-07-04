@@ -129,7 +129,7 @@ class RsoAuthClient extends RsoEngine {
         }
 
         const ssid_cookie = TokenResponse.response.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
-        
+
         if (!ssid_cookie) {
             throw new Error(
                 '<asid> Cookie is undefined'
@@ -156,7 +156,7 @@ class RsoAuthClient extends RsoEngine {
 
         //output
         return (await this.fromUrl(TokenResponse.response.data.response.parameters.uri));
-        
+
     }
 }
 

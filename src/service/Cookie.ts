@@ -14,7 +14,7 @@ import { RsoAxios, type RsoAxiosResponse } from "../client/Axios";
 
 class RsoAuthCookie {
     private options: { config: RsoOptions, data: RsoAuthType };
-    
+
     private cookie: CookieJar;
     private RsoAxios: RsoAxios;
 
