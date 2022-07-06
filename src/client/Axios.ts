@@ -5,40 +5,42 @@ import axios, { type Axios, type AxiosRequestConfig, type AxiosError, type Axios
 
 //interface
 
-interface ValRsoAxiosError {
-    errorCode: string;
-    message: string;
-    data: any;
-}
+namespace ValRsoAxios {
+    export interface Error {
+        errorCode: string;
+        message: string;
+        data: any;
+    }
+    
+    export interface Response<ValRsoAxiosReturn = any> {
+        isError: boolean;
+        response: AxiosResponse<ValRsoAxiosReturn>;
+        error?: AxiosError;
+    }
+    
+    export type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
+    
+    export interface EventData {
+        method: ValRsoAxios.Method;
+        url: string;
+        body?: Object;
+        config: AxiosRequestConfig;
+    }
 
-interface ValRsoAxiosResponse<ValRsoAxiosReturn = any> {
-    isError: boolean;
-    response: AxiosResponse<ValRsoAxiosReturn>;
-    error?: AxiosError;
-}
-
-type ValRsoAxiosMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
-
-interface ValRsoAxiosEventData {
-    method: ValRsoAxiosMethod;
-    url: string;
-    body?: Object;
-    config: AxiosRequestConfig;
+    export interface Event {
+        'ready': () => void;
+        'request': (data: ValRsoAxios.EventData) => void;
+        'error': (data: ValRsoAxios.Error) => void;
+    }
 }
 
 //event
 
-interface ValRsoAxiosEvent {
-    'ready': () => void;
-    'request': (data: ValRsoAxiosEventData) => void;
-    'error': (data: ValRsoAxiosError) => void;
-}
-
 declare interface ValRsoAxios {
-    emit<EventName extends keyof ValRsoAxiosEvent>(name: EventName, ...args: Parameters<ValRsoAxiosEvent[EventName]>): any;
-    on<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback: ValRsoAxiosEvent[EventName]): any;
-    once<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback: ValRsoAxiosEvent[EventName]): any;
-    off<EventName extends keyof ValRsoAxiosEvent>(name: EventName, callback?: ValRsoAxiosEvent[EventName]): any;
+    emit<EventName extends keyof ValRsoAxios.Event>(name: EventName, ...args: Parameters<ValRsoAxios.Event[EventName]>): any;
+    on<EventName extends keyof ValRsoAxios.Event>(name: EventName, callback: ValRsoAxios.Event[EventName]): any;
+    once<EventName extends keyof ValRsoAxios.Event>(name: EventName, callback: ValRsoAxios.Event[EventName]): any;
+    off<EventName extends keyof ValRsoAxios.Event>(name: EventName, callback?: ValRsoAxios.Event[EventName]): any;
 }
 
 //class
@@ -68,9 +70,9 @@ class ValRsoAxios extends EventEmitter {
     /**
      * 
      * @param {AxiosError} error Axios Error
-     * @returns {ValRsoAxiosResponse}
+     * @returns {ValRsoAxios.Response}
      */
-    private errorHandler(error: AxiosError): ValRsoAxiosResponse {
+    private errorHandler(error: AxiosError): ValRsoAxios.Response {
         this.emit('error', {
             errorCode: 'ValRsoAxios_Request_Error',
             message: error.message,
@@ -89,13 +91,13 @@ class ValRsoAxios extends EventEmitter {
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<ValRsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxios.Response>}
     */
-    public async get(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
+    public async get(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
         let _error = false;
 
-        const RequestData: ValRsoAxiosEventData = {
+        const RequestData: ValRsoAxios.EventData = {
             method: 'get',
             url: url,
             config: config,
@@ -121,13 +123,13 @@ class ValRsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<ValRsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxios.Response>}
     */
-    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
+    public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
         let _error = false;
 
-        const RequestData: ValRsoAxiosEventData = {
+        const RequestData: ValRsoAxios.EventData = {
             method: 'post',
             url: url,
             body: body,
@@ -154,13 +156,13 @@ class ValRsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<ValRsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxios.Response>}
     */
-    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
+    public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
         let _error = false;
 
-        const RequestData: ValRsoAxiosEventData = {
+        const RequestData: ValRsoAxios.EventData = {
             method: 'put',
             url: url,
             body: body,
@@ -187,13 +189,13 @@ class ValRsoAxios extends EventEmitter {
     * @param {String} url URL
     * @param {Object} body Body
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<ValRsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxios.Response>}
     */
-    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
+    public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
         let _error = false;
 
-        const RequestData: ValRsoAxiosEventData = {
+        const RequestData: ValRsoAxios.EventData = {
             method: 'patch',
             url: url,
             body: body,
@@ -219,13 +221,13 @@ class ValRsoAxios extends EventEmitter {
     /**
     * @param {String} url URL
     * @param {AxiosRequestConfig} config Axios Config
-    * @returns {Promise<ValRsoAxiosResponse>}
+    * @returns {Promise<ValRsoAxios.Response>}
     */
-    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxiosResponse> {
+    public async delete(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
         let _error = false;
 
-        const RequestData: ValRsoAxiosEventData = {
+        const RequestData: ValRsoAxios.EventData = {
             method: 'delete',
             url: url,
             config: config,
@@ -252,7 +254,4 @@ class ValRsoAxios extends EventEmitter {
 
 export {
     ValRsoAxios
-};
-export type {
-    ValRsoAxiosError, ValRsoAxiosResponse, ValRsoAxiosMethod, ValRsoAxiosEventData, ValRsoAxiosEvent
 };

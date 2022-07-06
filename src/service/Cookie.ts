@@ -1,8 +1,8 @@
 import {
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers,
-    type ValRsoOptions, type ValRsoAuthType
+    type ValRsoEngine, type ValRsoAuthType
 } from "../client/Engine";
-import { ValRsoAuthClient, type ValRsoAuthResponse } from "../client/Auth";
+import { ValRsoAuth, type ValRsoAuthResponse } from "../client/Auth";
 
 import toUft8 from "../utils/toUft8";
 
@@ -10,15 +10,15 @@ import { CookieJar } from "tough-cookie";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 
 import type { AxiosRequestConfig } from "axios";
-import { ValRsoAxios, type ValRsoAxiosResponse } from "../client/Axios";
+import { ValRsoAxios } from "../client/Axios";
 
 class ValRsoAuthCookie {
-    private options: { config: ValRsoOptions, data: ValRsoAuthType };
+    private options: { config: ValRsoEngine.Options, data: ValRsoAuthType };
 
     private cookie: CookieJar;
     private ValRsoAxios: ValRsoAxios;
 
-    public constructor(options: { config: ValRsoOptions, data: ValRsoAuthType }) {
+    public constructor(options: { config: ValRsoEngine.Options, data: ValRsoAuthType }) {
         this.options = options;
 
         this.cookie = CookieJar.fromJSON(JSON.stringify(options.data.cookie.jar));
@@ -40,7 +40,7 @@ class ValRsoAuthCookie {
     public async ReAuth() {
         //token
 
-        const TokenResponse: ValRsoAxiosResponse<ValRsoAuthResponse> = await this.ValRsoAxios.post('https://auth.riotgames.com/api/v1/authorization', {
+        const TokenResponse: ValRsoAxios.Response<ValRsoAuthResponse> = await this.ValRsoAxios.post('https://auth.riotgames.com/api/v1/authorization', {
             client_id: "play-valorant-web-prod",
             nonce: 1,
             redirect_uri: "https://playvalorant.com/opt_in",
@@ -72,7 +72,7 @@ class ValRsoAuthCookie {
 
         this.options.data.cookie.ssid = ssid_cookie;
 
-        return await (new ValRsoAuthClient(this.options)).fromResponse(TokenResponse);
+        return await (new ValRsoAuth(this.options)).fromResponse(TokenResponse);
     }
 }
 

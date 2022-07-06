@@ -2,24 +2,22 @@
 
 import {
     ValRsoEngine,
-    type ValRsoAuthType, type ValRsoClientPlatfrom, type ValRsoOptions
+    type ValRsoAuthType
 } from "./client/Engine";
 
 import {
-    ValRsoClient,
-    type ValRsoExpire
+    ValRso
 } from "./client/Client";
 
 // export
 
 export {
     ValRsoEngine,
-    type ValRsoAuthType, type ValRsoClientPlatfrom, type ValRsoOptions
+    type ValRsoAuthType as ValRsoAuth
 };
 
 export {
-    ValRsoClient,
-    type ValRsoExpire
+    ValRso,
 };
 
-export default ValRsoClient;
+export default ValRso;

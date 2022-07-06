@@ -2,8 +2,7 @@
 
 import {
     ValRsoEngine,
-    type ValRsoOptions,
-    type ValRsoAuthType,
+    type ValRsoAuthType
 } from "./Engine";
 import { CookieJar } from "tough-cookie";
 
@@ -13,29 +12,31 @@ import { ValRsoAuthCookie } from "../service/Cookie";
 
 //interface
 
-type ValRsoExpire = {
-    name: 'cookie';
-    data: {
-        jar: CookieJar,
-        ssid: string,
+namespace ValRso {
+    export type Expire = {
+        name: 'cookie';
+        data: {
+            jar: CookieJar,
+            ssid: string,
+        };
+    } | {
+        name: 'token';
+        data: {
+            access_token: string,
+            id_token: string,
+        };
     };
-} | {
-    name: 'token';
-    data: {
-        access_token: string,
-        id_token: string,
-    };
-};
+}
 
 //class
 
-class ValRsoClient extends ValRsoEngine {
+class ValRso extends ValRsoEngine {
 
     /**
      * Create a new ValRso Client
-     * @param {ValRsoOptions} options Client Config
+     * @param {ValRsoEngine.Options} options Client Config
      */
-    public constructor(options: ValRsoOptions = {}) {
+    public constructor(options: ValRsoEngine.Options = {}) {
         super(options);
     }
 
@@ -77,10 +78,10 @@ class ValRsoClient extends ValRsoEngine {
     /**
      * Reconnect to the server
      * @param force force to reload (only token)
-     * @returns {Promise<Array<ValRsoExpire>>}
+     * @returns {Promise<Array<ValRso.Expire>>}
      */
-    public async reload(force?: Boolean): Promise<Array<ValRsoExpire>> {
-        let expiresList: Array<ValRsoExpire> = [];
+    public async reload(force?: Boolean): Promise<Array<ValRso.Expire>> {
+        let expiresList: Array<ValRso.Expire> = [];
 
         if ((new Date().getTime()) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
             //event
@@ -130,11 +131,11 @@ class ValRsoClient extends ValRsoEngine {
     /**
      * From {@link toJSON toJSON()} data
      * @param {ValRsoAuthType} data {@link toJSON toJSON()} data
-     * @param {ValRsoOptions} options Client Config
-     * @returns {ValRsoClient}
+     * @param {ValRsoEngine.Options} options Client Config
+     * @returns {ValRso}
      */
-    public static fromJSON(data: ValRsoAuthType, options?: ValRsoOptions): ValRsoClient {
-        const RsoClient = new ValRsoClient(options);
+    public static fromJSON(data: ValRsoAuthType, options?: ValRsoEngine.Options): ValRso {
+        const RsoClient = new ValRso(options);
         RsoClient.fromJSON(data);
 
         return RsoClient;
@@ -143,11 +144,11 @@ class ValRsoClient extends ValRsoEngine {
     /**
      * From ssid Cookie
      * @param {string} cookie ssid Cookie
-     * @param {ValRsoOptions} options Client Config
-     * @returns {Promise<ValRsoClient>}
+     * @param {ValRsoEngine.Options} options Client Config
+     * @returns {Promise<ValRso>}
      */
-    public static async fromCookie(cookie: string, options?: ValRsoOptions): Promise<ValRsoClient> {
-        const RsoClient = new ValRsoClient(options);
+    public static async fromCookie(cookie: string, options?: ValRsoEngine.Options): Promise<ValRso> {
+        const RsoClient = new ValRso(options);
         RsoClient.cookie.ssid = cookie;
 
         await RsoClient.reload(true);
@@ -156,10 +157,8 @@ class ValRsoClient extends ValRsoEngine {
     }
 }
 
-export {
-    ValRsoClient
-};
+//export
 
-export type {
-    ValRsoExpire
+export {
+    ValRso
 };
