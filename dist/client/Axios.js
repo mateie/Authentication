@@ -46,7 +46,6 @@ class ValRsoAxios extends events_1.EventEmitter {
     get(url, config = {}) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             //setup
-            let _error = false;
             const RequestData = {
                 method: 'get',
                 url: url,
@@ -61,7 +60,7 @@ class ValRsoAxios extends events_1.EventEmitter {
             });
             //return
             return {
-                isError: _error,
+                isError: false,
                 response: _request,
             };
         });
@@ -75,7 +74,6 @@ class ValRsoAxios extends events_1.EventEmitter {
     post(url, body = {}, config = {}) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             //setup
-            let _error = false;
             const RequestData = {
                 method: 'post',
                 url: url,
@@ -91,7 +89,7 @@ class ValRsoAxios extends events_1.EventEmitter {
             });
             //return
             return {
-                isError: _error,
+                isError: false,
                 response: _request,
             };
         });
@@ -105,7 +103,6 @@ class ValRsoAxios extends events_1.EventEmitter {
     put(url, body = {}, config = {}) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             //setup
-            let _error = false;
             const RequestData = {
                 method: 'put',
                 url: url,
@@ -121,7 +118,7 @@ class ValRsoAxios extends events_1.EventEmitter {
             });
             //return
             return {
-                isError: _error,
+                isError: false,
                 response: _request,
             };
         });
@@ -135,7 +132,6 @@ class ValRsoAxios extends events_1.EventEmitter {
     patch(url, body = {}, config = {}) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             //setup
-            let _error = false;
             const RequestData = {
                 method: 'patch',
                 url: url,
@@ -151,7 +147,7 @@ class ValRsoAxios extends events_1.EventEmitter {
             });
             //return
             return {
-                isError: _error,
+                isError: false,
                 response: _request,
             };
         });
@@ -164,7 +160,6 @@ class ValRsoAxios extends events_1.EventEmitter {
     delete(url, config = {}) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             //setup
-            let _error = false;
             const RequestData = {
                 method: 'delete',
                 url: url,
@@ -179,7 +174,7 @@ class ValRsoAxios extends events_1.EventEmitter {
             });
             //return
             return {
-                isError: _error,
+                isError: false,
                 response: _request,
             };
         });

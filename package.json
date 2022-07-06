@@ -1,6 +1,6 @@
 {
   "name": "@valapi/auth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Valorant Authentication for NodeJS",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
@@ -48,7 +48,7 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^18.0.1",
+    "@types/node": "^18.0.3",
     "@types/tough-cookie": "^4.0.2",
     "typescript": "^4.7.4"
   }

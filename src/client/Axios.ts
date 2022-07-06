@@ -77,7 +77,7 @@ class ValRsoAxios extends EventEmitter {
             errorCode: 'ValRsoAxios_Request_Error',
             message: error.message,
             data: error,
-        })
+        });
 
         return {
             isError: error.isAxiosError,
@@ -95,8 +95,6 @@ class ValRsoAxios extends EventEmitter {
     */
     public async get(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
-        let _error = false;
-
         const RequestData: ValRsoAxios.EventData = {
             method: 'get',
             url: url,
@@ -114,7 +112,7 @@ class ValRsoAxios extends EventEmitter {
 
         //return
         return {
-            isError: _error,
+            isError: false,
             response: _request,
         };
     }
@@ -127,8 +125,6 @@ class ValRsoAxios extends EventEmitter {
     */
     public async post(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
-        let _error = false;
-
         const RequestData: ValRsoAxios.EventData = {
             method: 'post',
             url: url,
@@ -147,7 +143,7 @@ class ValRsoAxios extends EventEmitter {
 
         //return
         return {
-            isError: _error,
+            isError: false,
             response: _request,
         };
     }
@@ -160,8 +156,6 @@ class ValRsoAxios extends EventEmitter {
     */
     public async put(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
-        let _error = false;
-
         const RequestData: ValRsoAxios.EventData = {
             method: 'put',
             url: url,
@@ -180,7 +174,7 @@ class ValRsoAxios extends EventEmitter {
 
         //return
         return {
-            isError: _error,
+            isError: false,
             response: _request,
         };
     }
@@ -193,8 +187,6 @@ class ValRsoAxios extends EventEmitter {
     */
     public async patch(url: string, body: object = {}, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
-        let _error = false;
-
         const RequestData: ValRsoAxios.EventData = {
             method: 'patch',
             url: url,
@@ -213,7 +205,7 @@ class ValRsoAxios extends EventEmitter {
 
         //return
         return {
-            isError: _error,
+            isError: false,
             response: _request,
         };
     }
@@ -225,8 +217,6 @@ class ValRsoAxios extends EventEmitter {
     */
     public async delete(url: string, config: AxiosRequestConfig = {}): Promise<ValRsoAxios.Response> {
         //setup
-        let _error = false;
-
         const RequestData: ValRsoAxios.EventData = {
             method: 'delete',
             url: url,
@@ -244,7 +234,7 @@ class ValRsoAxios extends EventEmitter {
 
         //return
         return {
-            isError: _error,
+            isError: false,
             response: _request,
         };
     }
