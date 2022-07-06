@@ -1,7 +1,7 @@
 {
   "name": "@valapi/auth",
   "version": "1.0.1",
-  "description": "Valorant Authentication for NodeJS",
+  "description": "Valorant API - Authentication",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
