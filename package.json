@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KTNG-3/Riot-Games-Sign-On.git"
+    "url": "git+https://github.com/valapi/Authentication.git"
   },
   "keywords": [
     "RSO",
@@ -22,7 +22,9 @@
     "Games",
     "Sign",
     "On",
-    "Multifactor"
+    "Multifactor",
+    "Authentication",
+    "Valorant"
   ],
   "author": {
     "name": "ing3kth",
@@ -36,9 +38,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/KTNG-3/Riot-Games-Sign-On/issues"
+    "url": "https://github.com/valapi/Authentication/issues"
   },
-  "homepage": "https://github.com/KTNG-3/Riot-Games-Sign-On#readme",
+  "homepage": "https://github.com/valapi/Authentication#readme",
   "dependencies": {
     "axios": "^0.27.2",
     "http-cookie-agent": "^4.0.1",
