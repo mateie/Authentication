@@ -1,18 +1,18 @@
 //import
 
 import {
-    ValRsoEngine,
-    type ValRsoAuthType
-} from "./Engine";
+    ValSoEngine,
+    type ValSoAuthType
+} from "../client/Engine";
 import { CookieJar } from "tough-cookie";
 
-import { ValRsoAuthUser } from "../service/User";
-import { ValRsoAuthMultifactor } from "../service/Multifactor";
-import { ValRsoAuthCookie } from "../service/Cookie";
+import { ValSoAuthUser } from "../service/User";
+import { ValSoAuthMultifactor } from "../service/Multifactor";
+import { ValSoAuthCookie } from "../service/Cookie";
 
 //interface
 
-namespace ValRso {
+namespace ValSo {
     export type Expire = {
         name: 'cookie';
         data: {
@@ -30,13 +30,16 @@ namespace ValRso {
 
 //class
 
-class ValRso extends ValRsoEngine {
+/**
+ * Sign On
+ */
+class ValSo extends ValSoEngine {
 
     /**
-     * Create a new ValRso Client
-     * @param {ValRsoEngine.Options} options Client Config
+     * Create a new ValSo Client
+     * @param {ValSoEngine.Options} options Client Config
      */
-    public constructor(options: ValRsoEngine.Options = {}) {
+    public constructor(options: ValSoEngine.Options = {}) {
         super(options);
     }
 
@@ -49,14 +52,14 @@ class ValRso extends ValRsoEngine {
      * @returns {Promise<void>}
      */
     public async login(username: string, password: string): Promise<void> {
-        const ValRsoUser = new ValRsoAuthUser({
+        const ValSoUser = new ValSoAuthUser({
             config: this.config,
             data: this.toJSON(),
         });
 
-        const ValRsoLoginAuth = await ValRsoUser.LoginForm(username, password);
+        const ValSoLoginAuth = await ValSoUser.LoginForm(username, password);
 
-        this.fromJSON(ValRsoLoginAuth);
+        this.fromJSON(ValSoLoginAuth);
     }
 
     /**
@@ -65,30 +68,30 @@ class ValRso extends ValRsoEngine {
      * @returns {Promise<void>}
      */
     public async verify(verificationCode: number): Promise<void> {
-        const ValRsoMultifactor = new ValRsoAuthMultifactor({
+        const ValSoMultifactor = new ValSoAuthMultifactor({
             config: this.config,
             data: this.toJSON(),
         });
 
-        const ValRsoLoginAuth = await ValRsoMultifactor.TwoFactor(verificationCode);
+        const ValSoLoginAuth = await ValSoMultifactor.TwoFactor(verificationCode);
 
-        this.fromJSON(ValRsoLoginAuth);
+        this.fromJSON(ValSoLoginAuth);
     }
 
     /**
      * Reconnect to the server
      * @param force force to reload (only token)
-     * @returns {Promise<Array<ValRso.Expire>>}
+     * @returns {Promise<Array<ValSo.Expire>>}
      */
-    public async reload(force?: Boolean): Promise<Array<ValRso.Expire>> {
-        let expiresList: Array<ValRso.Expire> = [];
+    public async reload(force?: Boolean): Promise<Array<ValSo.Expire>> {
+        let expiresList: Array<ValSo.Expire> = [];
 
         if ((new Date().getTime()) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
             //event
             expiresList.push({
                 name: "cookie",
                 data: this.cookie,
-            })
+            });
             this.cookie.jar = new CookieJar();
 
             //uptodate
@@ -106,21 +109,21 @@ class ValRso extends ValRsoEngine {
                     access_token: this.access_token,
                     id_token: this.id_token,
                 },
-            })
+            });
             this.access_token = '';
 
             //uptodate
             this.createAt.token = new Date().getTime();
 
             //auto
-            const ValRsoCookie = new ValRsoAuthCookie({
+            const ValSoCookie = new ValSoAuthCookie({
                 config: this.config,
                 data: this.toJSON(),
             });
 
-            const ValRsoReAuth = await ValRsoCookie.ReAuth();
+            const ValSoReAuth = await ValSoCookie.ReAuth();
 
-            this.fromJSON(ValRsoReAuth);
+            this.fromJSON(ValSoReAuth);
         }
 
         return expiresList;
@@ -130,12 +133,12 @@ class ValRso extends ValRsoEngine {
 
     /**
      * From {@link toJSON toJSON()} data
-     * @param {ValRsoAuthType} data {@link toJSON toJSON()} data
-     * @param {ValRsoEngine.Options} options Client Config
-     * @returns {ValRso}
+     * @param {ValSoAuthType} data {@link toJSON toJSON()} data
+     * @param {ValSoEngine.Options} options Client Config
+     * @returns {ValSo}
      */
-    public static fromJSON(data: ValRsoAuthType, options?: ValRsoEngine.Options): ValRso {
-        const RsoClient = new ValRso(options);
+    public static fromJSON(data: ValSoAuthType, options?: ValSoEngine.Options): ValSo {
+        const RsoClient = new ValSo(options);
         RsoClient.fromJSON(data);
 
         return RsoClient;
@@ -144,11 +147,11 @@ class ValRso extends ValRsoEngine {
     /**
      * From ssid Cookie
      * @param {string} cookie ssid Cookie
-     * @param {ValRsoEngine.Options} options Client Config
-     * @returns {Promise<ValRso>}
+     * @param {ValSoEngine.Options} options Client Config
+     * @returns {Promise<ValSo>}
      */
-    public static async fromCookie(cookie: string, options?: ValRsoEngine.Options): Promise<ValRso> {
-        const RsoClient = new ValRso(options);
+    public static async fromCookie(cookie: string, options?: ValSoEngine.Options): Promise<ValSo> {
+        const RsoClient = new ValSo(options);
         RsoClient.cookie.ssid = cookie;
 
         await RsoClient.reload(true);
@@ -160,5 +163,5 @@ class ValRso extends ValRsoEngine {
 //export
 
 export {
-    ValRso
+    ValSo
 };

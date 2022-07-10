@@ -1,20 +1,20 @@
 // import
 
 import {
-    ValRsoEngine,
+    ValSoEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers, CONFIG_UserAgent,
-    type ValRsoAuthType
+    type ValSoAuthType
 } from "../client/Engine";
 
 import toUft8 from "../utils/toUft8";
 
-import { ValRsoAxios } from "../client/Axios";
+import { ValSoAxios } from "../client/Axios";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 import type { AxiosRequestConfig } from "axios";
 
 // interface
 
-type ValRsoAuthResponse = {
+type ValSoAuthResponse = {
     type: "response";
     response: {
         mode: string,
@@ -38,11 +38,11 @@ type ValRsoAuthResponse = {
 
 // class
 
-class ValRsoAuth extends ValRsoEngine {
-    private options: { config: ValRsoEngine.Options, data: ValRsoAuthType };
-    private ValRsoAxios: ValRsoAxios;
+class ValSoAuth extends ValSoEngine {
+    private options: { config: ValSoEngine.Options, data: ValSoAuthType };
+    private ValSoAxios: ValSoAxios;
 
-    public constructor(options: { config: ValRsoEngine.Options, data: ValRsoAuthType }) {
+    public constructor(options: { config: ValSoEngine.Options, data: ValSoAuthType }) {
         super()
         this.build({ config: options.config, data: options.data });
 
@@ -61,10 +61,23 @@ class ValRsoAuth extends ValRsoEngine {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
         };
 
-        this.ValRsoAxios = new ValRsoAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValSoAxios = new ValSoAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     // auth
+
+    public async fromToken(token: string) {
+        this.access_token = token;
+
+        //ENTITLEMENTS
+        const EntitlementsResponse: ValSoAxios.Response = await this.ValSoAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
+            headers: {
+                'Authorization': `${this.token_type} ${this.access_token}`,
+            },
+        });
+
+        this.entitlements_token = EntitlementsResponse.response.data.entitlements_token || this.entitlements_token;
+    }
 
     public async fromUrl(TokenUrl: string) {
         //TOKEN
@@ -88,17 +101,10 @@ class ValRsoAuth extends ValRsoEngine {
         this.token_type = String(new URLSearchParams(Search_path).get('token_type')) || 'Bearer';
         this.session_state = String(new URLSearchParams(Search_path).get('session_state'));
 
-        //ENTITLEMENTS
-        const EntitlementsResponse: ValRsoAxios.Response = await this.ValRsoAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
-            headers: {
-                'Authorization': `${this.token_type} ${this.access_token}`,
-            },
-        });
-
-        this.entitlements_token = EntitlementsResponse.response.data.entitlements_token;
+        await this.fromToken(this.access_token);
 
         //REGION
-        const RegionResponse: ValRsoAxios.Response = await this.ValRsoAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+        const RegionResponse: ValSoAxios.Response = await this.ValSoAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
             id_token: this.id_token,
         }, {
             headers: {
@@ -114,7 +120,7 @@ class ValRsoAuth extends ValRsoEngine {
         return this.toJSON();
     }
 
-    public async fromResponse(TokenResponse: ValRsoAxios.Response<ValRsoAuthResponse>) {
+    public async fromResponse(TokenResponse: ValSoAxios.Response<ValSoAuthResponse>) {
         if (TokenResponse.isError || !TokenResponse.response.data.type) {
             this.isError = true;
 
@@ -161,9 +167,9 @@ class ValRsoAuth extends ValRsoEngine {
 }
 
 export {
-    ValRsoAuth
+    ValSoAuth
 };
 
 export type {
-    ValRsoAuthResponse
+    ValSoAuthResponse
 };

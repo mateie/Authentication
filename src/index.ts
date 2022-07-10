@@ -1,23 +1,23 @@
 // import
 
 import {
-    ValRsoEngine,
-    type ValRsoAuthType
+    ValSoEngine,
+    type ValSoAuthType
 } from "./client/Engine";
 
 import {
-    ValRso
-} from "./client/Client";
+    ValSo
+} from "./auth/So";
 
 // export
 
 export {
-    ValRsoEngine,
-    type ValRsoAuthType as ValRsoAuth
+    ValSoEngine,
+    type ValSoAuthType as ValSoAuth
 };
 
 export {
-    ValRso,
+    ValSo,
 };
 
-export default ValRso;
+export default ValSo;

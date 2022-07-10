@@ -7,7 +7,7 @@ import toUft8 from "../utils/toUft8";
 
 //interface
 
-interface ValRsoAuthType {
+interface ValSoAuthType {
     cookie: {
         jar: CookieJar.Serialized,
         ssid: string,
@@ -32,7 +32,7 @@ interface ValRsoAuthType {
 
 // options
 
-namespace ValRsoEngine {
+namespace ValSoEngine {
     export interface ClientPlatfrom {
         "platformType": string;
         "platformOS": string;
@@ -43,7 +43,7 @@ namespace ValRsoEngine {
     export interface Options {
         client?: {
             version?: string,
-            platform?: ValRsoEngine.ClientPlatfrom,
+            platform?: ValSoEngine.ClientPlatfrom,
         };
         axiosConfig?: AxiosRequestConfig,
         expiresIn?: {
@@ -56,7 +56,7 @@ namespace ValRsoEngine {
 //class
 
 const CONFIG_ClientVersion: string = `release-05.00-shipping-11-729462`;
-const CONFIG_ClientPlatform: ValRsoEngine.ClientPlatfrom = {
+const CONFIG_ClientPlatform: ValSoEngine.ClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,
     "platformOSVersion": `10.0.19042.1.256.64bit`,
@@ -73,7 +73,7 @@ const CONFIG_Ciphers: Array<string> = [
     'TLS_AES_128_CCM_SHA256',
 ];
 
-const CONFIG_DEFAULT: ValRsoEngine.Options = {
+const CONFIG_DEFAULT: ValSoEngine.Options = {
     client: {
         version: CONFIG_ClientVersion,
         platform: CONFIG_ClientPlatform,
@@ -91,7 +91,7 @@ const CONFIG_DEFAULT: ValRsoEngine.Options = {
     },
 }
 
-class ValRsoEngine {
+class ValSoEngine {
     protected cookie: {
         jar: CookieJar,
         ssid: string,
@@ -125,15 +125,15 @@ class ValRsoEngine {
     /**
      * Client Config
      */
-    public config: ValRsoEngine.Options
+    public config: ValSoEngine.Options;
 
     // class
 
     /**
-     * Create a new ValRso Client
-     * @param {ValRsoEngine.Options} options Client Config
+     * Create a new ValSo Client
+     * @param {ValSoEngine.Options} options Client Config
      */
-    public constructor(options: ValRsoEngine.Options = {}) {
+    public constructor(options: ValSoEngine.Options = {}) {
         this.cookie = {
             jar: new CookieJar(),
             ssid: '',
@@ -161,10 +161,10 @@ class ValRsoEngine {
     //save
 
     /**
-     * To {@link ValRsoAuthType save} data
-     * @returns {ValRsoAuthType}
+     * To {@link ValSoAuthType save} data
+     * @returns {ValSoAuthType}
      */
-    public toJSON(): ValRsoAuthType {
+    public toJSON(): ValSoAuthType {
         return {
             cookie: {
                 jar: this.cookie.jar.toJSON(),
@@ -184,11 +184,11 @@ class ValRsoEngine {
     }
 
     /**
-     * From {@link ValRsoAuthType save} data
-     * @param {ValRsoAuthType} data {@link toJSON toJSON()} data
+     * From {@link ValSoAuthType save} data
+     * @param {ValSoAuthType} data {@link toJSON toJSON()} data
      * @returns {void}
      */
-    public fromJSON(data: ValRsoAuthType): void {
+    public fromJSON(data: ValSoAuthType): void {
         this.cookie = {
             jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
             ssid: data.cookie.ssid,
@@ -207,7 +207,7 @@ class ValRsoEngine {
 
     //engine
 
-    protected build(options: { config: ValRsoEngine.Options, data: ValRsoAuthType }): void {
+    protected build(options: { config: ValSoEngine.Options, data: ValSoAuthType }): void {
         this.config = options.config;
 
         this.fromJSON(options.data);
@@ -224,10 +224,10 @@ class ValRsoEngine {
 //export
 
 export {
-    ValRsoEngine,
+    ValSoEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT
 };
 
 export type {
-    ValRsoAuthType
+    ValSoAuthType
 };
