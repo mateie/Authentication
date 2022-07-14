@@ -1,8 +1,8 @@
 import {
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers,
-    type ValSoEngine, type ValSoAuthType
+    type ValAuthEngine, type ValAuthData
 } from "../client/Engine";
-import { ValSoAuth, type ValSoAuthResponse } from "../client/Auth";
+import { ValAuthCore, type ValAuthRequestResponse } from "../client/Auth";
 
 import toUft8 from "../utils/toUft8";
 
@@ -10,15 +10,15 @@ import { CookieJar } from "tough-cookie";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 
 import type { AxiosRequestConfig } from "axios";
-import { ValSoAxios } from "../client/Axios";
+import { ValAuthAxios } from "../client/Axios";
 
-class ValSoAuthCookie {
-    private options: { config: ValSoEngine.Options, data: ValSoAuthType };
+class ValAuthCookie {
+    private options: { config: ValAuthEngine.Options, data: ValAuthData };
 
     private cookie: CookieJar;
-    private ValSoAxios: ValSoAxios;
+    private ValAuthAxios: ValAuthAxios;
 
-    public constructor(options: { config: ValSoEngine.Options, data: ValSoAuthType }) {
+    public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
         this.options = options;
 
         this.cookie = CookieJar.fromJSON(JSON.stringify(options.data.cookie.jar));
@@ -32,7 +32,7 @@ class ValSoAuthCookie {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
 
-        this.ValSoAxios = new ValSoAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = new ValAuthAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     //auth
@@ -40,7 +40,7 @@ class ValSoAuthCookie {
     public async ReAuth() {
         //token
 
-        const TokenResponse: ValSoAxios.Response<ValSoAuthResponse> = await this.ValSoAxios.post('https://auth.riotgames.com/api/v1/authorization', {
+        const TokenResponse: ValAuthAxios.Response<ValAuthRequestResponse> = await this.ValAuthAxios.post('https://auth.riotgames.com/api/v1/authorization', {
             client_id: "play-valorant-web-prod",
             nonce: 1,
             redirect_uri: "https://playvalorant.com/opt_in",
@@ -72,10 +72,10 @@ class ValSoAuthCookie {
 
         this.options.data.cookie.ssid = ssid_cookie;
 
-        return await (new ValSoAuth(this.options)).fromResponse(TokenResponse);
+        return await (new ValAuthCore(this.options)).fromResponse(TokenResponse);
     }
 }
 
 export {
-    ValSoAuthCookie
+    ValAuthCookie
 };

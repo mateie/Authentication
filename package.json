@@ -1,6 +1,6 @@
 {
   "name": "@valapi/auth",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Valorant API - Authentication",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
@@ -17,14 +17,14 @@
     "url": "git+https://github.com/valapi/Authentication.git"
   },
   "keywords": [
-    "RSO",
-    "Riot",
-    "Games",
-    "Sign",
-    "On",
-    "Multifactor",
-    "Authentication",
-    "Valorant"
+    "valorant",
+    "riot",
+    "api",
+    "val",
+    "mfa",
+    "2fa",
+    "multifactor",
+    "twofactor"
   ],
   "author": {
     "name": "ing3kth",
@@ -48,7 +48,7 @@
     "tslib": "^2.4.0"
   },
   "devDependencies": {
-    "@types/node": "^18.0.3",
+    "@types/node": "^18.0.4",
     "@types/tough-cookie": "^4.0.2",
     "typescript": "^4.7.4"
   }

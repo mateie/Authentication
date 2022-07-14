@@ -7,7 +7,7 @@ import toUft8 from "../utils/toUft8";
 
 //interface
 
-interface ValSoAuthType {
+interface ValAuthData {
     cookie: {
         jar: CookieJar.Serialized,
         ssid: string,
@@ -30,9 +30,7 @@ interface ValSoAuthType {
     };
 }
 
-// options
-
-namespace ValSoEngine {
+namespace ValAuthEngine {
     export interface ClientPlatfrom {
         "platformType": string;
         "platformOS": string;
@@ -43,7 +41,7 @@ namespace ValSoEngine {
     export interface Options {
         client?: {
             version?: string,
-            platform?: ValSoEngine.ClientPlatfrom,
+            platform?: ValAuthEngine.ClientPlatfrom,
         };
         axiosConfig?: AxiosRequestConfig,
         expiresIn?: {
@@ -56,7 +54,7 @@ namespace ValSoEngine {
 //class
 
 const CONFIG_ClientVersion: string = `release-05.00-shipping-11-729462`;
-const CONFIG_ClientPlatform: ValSoEngine.ClientPlatfrom = {
+const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,
     "platformOSVersion": `10.0.19042.1.256.64bit`,
@@ -73,7 +71,7 @@ const CONFIG_Ciphers: Array<string> = [
     'TLS_AES_128_CCM_SHA256',
 ];
 
-const CONFIG_DEFAULT: ValSoEngine.Options = {
+const CONFIG_DEFAULT: ValAuthEngine.Options = {
     client: {
         version: CONFIG_ClientVersion,
         platform: CONFIG_ClientPlatform,
@@ -91,7 +89,7 @@ const CONFIG_DEFAULT: ValSoEngine.Options = {
     },
 }
 
-class ValSoEngine {
+class ValAuthEngine {
     protected cookie: {
         jar: CookieJar,
         ssid: string,
@@ -125,15 +123,15 @@ class ValSoEngine {
     /**
      * Client Config
      */
-    public config: ValSoEngine.Options;
+    public config: ValAuthEngine.Options;
 
     // class
 
     /**
-     * Create a new ValSo Client
-     * @param {ValSoEngine.Options} options Client Config
+     * Create a new ValAuth Client
+     * @param {ValAuthEngine.Options} options Client Config
      */
-    public constructor(options: ValSoEngine.Options = {}) {
+    public constructor(options: ValAuthEngine.Options = {}) {
         this.cookie = {
             jar: new CookieJar(),
             ssid: '',
@@ -161,10 +159,10 @@ class ValSoEngine {
     //save
 
     /**
-     * To {@link ValSoAuthType save} data
-     * @returns {ValSoAuthType}
+     * To {@link ValAuthData save} data
+     * @returns {ValAuthData}
      */
-    public toJSON(): ValSoAuthType {
+    public toJSON(): ValAuthData {
         return {
             cookie: {
                 jar: this.cookie.jar.toJSON(),
@@ -184,11 +182,11 @@ class ValSoEngine {
     }
 
     /**
-     * From {@link ValSoAuthType save} data
-     * @param {ValSoAuthType} data {@link toJSON toJSON()} data
+     * From {@link ValAuthData save} data
+     * @param {ValAuthData} data {@link toJSON toJSON()} data
      * @returns {void}
      */
-    public fromJSON(data: ValSoAuthType): void {
+    public fromJSON(data: ValAuthData): void {
         this.cookie = {
             jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
             ssid: data.cookie.ssid,
@@ -207,7 +205,7 @@ class ValSoEngine {
 
     //engine
 
-    protected build(options: { config: ValSoEngine.Options, data: ValSoAuthType }): void {
+    protected build(options: { config: ValAuthEngine.Options, data: ValAuthData }): void {
         this.config = options.config;
 
         this.fromJSON(options.data);
@@ -224,10 +222,10 @@ class ValSoEngine {
 //export
 
 export {
-    ValSoEngine,
+    ValAuthEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT
 };
 
 export type {
-    ValSoAuthType
+    ValAuthData
 };
