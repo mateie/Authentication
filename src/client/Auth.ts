@@ -1,4 +1,4 @@
-// import
+//import
 
 import {
     ValAuthEngine,
@@ -12,7 +12,7 @@ import { ValAuthAxios } from "../client/Axios";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 import type { AxiosRequestConfig } from "axios";
 
-// interface
+//interface
 
 type ValAuthRequestResponse = {
     type: "response";
@@ -36,7 +36,7 @@ type ValAuthRequestResponse = {
     securityProfile: string;
 }
 
-// class
+//class
 
 class ValAuthCore extends ValAuthEngine {
     private options: { config: ValAuthEngine.Options, data: ValAuthData };
@@ -64,7 +64,7 @@ class ValAuthCore extends ValAuthEngine {
         this.ValAuthAxios = new ValAuthAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
-    // auth
+    //auth
 
     public async fromToken(token: string) {
         this.access_token = token;
@@ -165,6 +165,8 @@ class ValAuthCore extends ValAuthEngine {
 
     }
 }
+
+//export
 
 export {
     ValAuthCore

@@ -4,7 +4,7 @@
   
 [![Profile](https://github.com/valapi/.github/blob/main/128_valapi.png?raw=true)](https://github.com/valapi)
   
-NodeJS package that make more easier to use Valorant API
+Valorant Authentication
   
 [![LICENSE](https://badgen.net/badge/license/MIT/blue)](https://github.com/valapi/.github/blob/main/LICENSE)
 [![Github](https://badgen.net/badge/icon/github?icon=github&label)](https://github.com/valapi)
@@ -20,4 +20,34 @@ NodeJS package that make more easier to use Valorant API
 
 ## Guide
 
-Full Guide: **[Click Here](https://valapi.github.io/docs/)**
+Full Guide: **[Click Here](https://valapi.github.io/docs/PACKAGE/auth/Intro.html#contents)**
+
+```typescript
+import { Client } from '@valapi/auth';
+```
+
+### Client
+
+```typescript
+const AuthClient = new Client();
+```
+
+### Auth
+
+```typescript
+await AuthClient.login('BestUsername', 'SuperSecretPassword');
+```
+
+```typescript
+if (AuthClient.multifactor === true) {
+
+    await AuthClient.verify(428793 /* <--- Verify Code */);
+    
+}
+```
+
+### PlayerUUID (puuid)
+
+```typescript
+const puuid = AuthClient.parsePlayerUuid();
+```

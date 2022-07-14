@@ -1,3 +1,5 @@
+//import
+
 import {
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers,
     type ValAuthEngine, type ValAuthData
@@ -11,6 +13,8 @@ import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 
 import type { AxiosRequestConfig } from "axios";
 import { ValAuthAxios } from "../client/Axios";
+
+//class
 
 class ValAuthUser {
     private options: { config: ValAuthEngine.Options, data: ValAuthData };
@@ -86,6 +90,8 @@ class ValAuthUser {
         return await (new ValAuthCore(this.options)).fromResponse(TokenResponse);
     }
 }
+
+//export
 
 export {
     ValAuthUser

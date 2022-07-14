@@ -1,4 +1,4 @@
-// import
+//import
 
 import {
     ValAuthEngine,
@@ -10,7 +10,7 @@ import {
     ValAuth
 } from "./client/Client";
 
-// export
+//export
 
 export {
     ValAuthEngine,

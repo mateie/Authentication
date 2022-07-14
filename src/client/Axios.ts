@@ -46,7 +46,7 @@ declare interface ValAuthAxios {
 //class
 
 class ValAuthAxios extends EventEmitter {
-    // constructor
+    //constructor
 
     public theAxios: Axios;
 
@@ -65,7 +65,7 @@ class ValAuthAxios extends EventEmitter {
         this.emit('ready');
     }
 
-    // handler
+    //handler
 
     /**
      * 
@@ -86,7 +86,7 @@ class ValAuthAxios extends EventEmitter {
         };
     }
 
-    // request
+    //request
 
     /**
     * @param {String} url URL

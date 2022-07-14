@@ -31,7 +31,7 @@ namespace ValAuth {
 //class
 
 /**
- * Sign On
+ * Valorant Authentication
  */
 class ValAuth extends ValAuthEngine {
 
