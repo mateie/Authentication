@@ -6,13 +6,12 @@ import {
 } from "../client/Engine";
 import { ValAuthCore, type ValAuthRequestResponse } from "../client/Auth";
 
-import toUft8 from "../utils/toUft8";
+import { toUft8 } from "@valapi/lib";
 
 import { CookieJar } from "tough-cookie";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 
-import type { AxiosRequestConfig } from "axios";
-import { ValAuthAxios } from "../client/Axios";
+import axios, { type Axios, type AxiosRequestConfig, type AxiosResponse } from "axios";
 
 //class
 
@@ -20,7 +19,7 @@ class ValAuthCookie {
     private options: { config: ValAuthEngine.Options, data: ValAuthData };
 
     private cookie: CookieJar;
-    private ValAuthAxios: ValAuthAxios;
+    private ValAuthAxios: Axios;
 
     public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
         this.options = options;
@@ -36,7 +35,7 @@ class ValAuthCookie {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = new ValAuthAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     //auth
@@ -44,7 +43,7 @@ class ValAuthCookie {
     public async ReAuth() {
         //token
 
-        const TokenResponse: ValAuthAxios.Response<ValAuthRequestResponse> = await this.ValAuthAxios.post('https://auth.riotgames.com/api/v1/authorization', {
+        const TokenResponse: AxiosResponse<ValAuthRequestResponse> = await this.ValAuthAxios.post('https://auth.riotgames.com/api/v1/authorization', {
             client_id: "play-valorant-web-prod",
             nonce: 1,
             redirect_uri: "https://playvalorant.com/opt_in",
@@ -58,18 +57,14 @@ class ValAuthCookie {
             },
         });
 
-        if (!TokenResponse.response.headers["set-cookie"]) {
-            throw new Error(
-                '<cookie> Cookie is undefined'
-            );
+        if (!TokenResponse.headers["set-cookie"]) {
+            throw '<cookie> Cookie is undefined';
         }
 
-        const ssid_cookie = TokenResponse.response.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
+        const ssid_cookie = TokenResponse.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
 
         if (!ssid_cookie) {
-            throw new Error(
-                '<ssid> Cookie is undefined'
-            );
+            throw '<ssid> Cookie is undefined';
         }
 
         //auth

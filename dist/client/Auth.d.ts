@@ -1,5 +1,5 @@
 import { ValAuthEngine, type ValAuthData } from "../client/Engine";
-import { ValAuthAxios } from "../client/Axios";
+import { type AxiosResponse } from "axios";
 declare type ValAuthRequestResponse = {
     type: "response";
     response: {
@@ -20,6 +20,10 @@ declare type ValAuthRequestResponse = {
     };
     country: string;
     securityProfile: string;
+} | {
+    type: "auth";
+    error: string;
+    country: string;
 };
 declare class ValAuthCore extends ValAuthEngine {
     private options;
@@ -30,7 +34,7 @@ declare class ValAuthCore extends ValAuthEngine {
     });
     fromToken(token: string): Promise<void>;
     fromUrl(TokenUrl: string): Promise<ValAuthData>;
-    fromResponse(TokenResponse: ValAuthAxios.Response<ValAuthRequestResponse>): Promise<ValAuthData>;
+    fromResponse(TokenResponse: AxiosResponse<ValAuthRequestResponse>): Promise<ValAuthData>;
 }
 export { ValAuthCore };
 export type { ValAuthRequestResponse };

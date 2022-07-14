@@ -19,6 +19,7 @@ class ValAuth extends Engine_1.ValAuthEngine {
      */
     constructor(options = {}) {
         super(options);
+        this.emit('ready');
     }
     //auth
     /**
@@ -33,8 +34,23 @@ class ValAuth extends Engine_1.ValAuthEngine {
                 config: this.config,
                 data: this.toJSON(),
             });
-            const ValAuthLoginAuth = yield ValUser.LoginForm(username, password);
-            this.fromJSON(ValAuthLoginAuth);
+            try {
+                const ValUserAuth = yield ValUser.LoginForm(username, password);
+                if (ValUserAuth.isError === true) {
+                    this.emit('error', {
+                        name: 'ValAuth_Error',
+                        message: 'Login Error',
+                        data: ValUserAuth
+                    });
+                }
+                this.fromJSON(ValUserAuth);
+            }
+            catch (error) {
+                this.emit('error', {
+                    name: 'ValAuth_Error',
+                    message: String(error)
+                });
+            }
         });
     }
     /**
@@ -48,8 +64,23 @@ class ValAuth extends Engine_1.ValAuthEngine {
                 config: this.config,
                 data: this.toJSON(),
             });
-            const ValAuthLoginAuth = yield ValMultifactor.TwoFactor(verificationCode);
-            this.fromJSON(ValAuthLoginAuth);
+            try {
+                const ValMultifactorAuth = yield ValMultifactor.TwoFactor(verificationCode);
+                if (ValMultifactorAuth.isError === true) {
+                    this.emit('error', {
+                        name: 'ValAuth_Error',
+                        message: 'Multifactor Error',
+                        data: ValMultifactorAuth
+                    });
+                }
+                this.fromJSON(ValMultifactorAuth);
+            }
+            catch (error) {
+                this.emit('error', {
+                    name: 'ValAuth_Error',
+                    message: String(error)
+                });
+            }
         });
     }
     /**
@@ -63,10 +94,12 @@ class ValAuth extends Engine_1.ValAuthEngine {
             let expiresList = [];
             if ((new Date().getTime()) >= (this.createAt.cookie + Number((_a = this.config.expiresIn) === null || _a === void 0 ? void 0 : _a.cookie))) {
                 //event
-                expiresList.push({
+                const _event = {
                     name: "cookie",
                     data: this.cookie,
-                });
+                };
+                this.emit("expires", _event);
+                expiresList.push(_event);
                 this.cookie.jar = new tough_cookie_1.CookieJar();
                 //uptodate
                 this.createAt = {
@@ -76,13 +109,15 @@ class ValAuth extends Engine_1.ValAuthEngine {
             }
             if ((new Date().getTime()) >= (this.createAt.token + Number((_b = this.config.expiresIn) === null || _b === void 0 ? void 0 : _b.token)) || force === true) {
                 //event
-                expiresList.push({
+                const _event = {
                     name: "token",
                     data: {
                         access_token: this.access_token,
                         id_token: this.id_token,
                     },
-                });
+                };
+                this.emit("expires", _event);
+                expiresList.push(_event);
                 this.access_token = '';
                 if (!this.cookie.ssid) {
                     return expiresList;
@@ -94,8 +129,23 @@ class ValAuth extends Engine_1.ValAuthEngine {
                     config: this.config,
                     data: this.toJSON(),
                 });
-                const ValAuthReAuth = yield ValCookie.ReAuth();
-                this.fromJSON(ValAuthReAuth);
+                try {
+                    const ValReAuth = yield ValCookie.ReAuth();
+                    if (ValReAuth.isError === true) {
+                        this.emit('error', {
+                            name: 'ValAuth_Error',
+                            message: 'Cookie Reauth Error',
+                            data: ValReAuth
+                        });
+                    }
+                    this.fromJSON(ValReAuth);
+                }
+                catch (error) {
+                    this.emit('error', {
+                        name: 'ValAuth_Error',
+                        message: String(error)
+                    });
+                }
             }
             return expiresList;
         });

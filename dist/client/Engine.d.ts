@@ -1,3 +1,4 @@
+import { ValEvent } from "@valapi/lib";
 import { CookieJar } from "tough-cookie";
 import type { AxiosRequestConfig } from "axios";
 interface ValAuthData {
@@ -46,7 +47,7 @@ declare const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom;
 declare const CONFIG_UserAgent: string;
 declare const CONFIG_Ciphers: Array<string>;
 declare const CONFIG_DEFAULT: ValAuthEngine.Options;
-declare class ValAuthEngine {
+declare class ValAuthEngine extends ValEvent {
     protected cookie: {
         jar: CookieJar;
         ssid: string;

@@ -6,11 +6,10 @@ import {
     type ValAuthData
 } from "../client/Engine";
 
-import toUft8 from "../utils/toUft8";
+import { toUft8 } from "@valapi/lib";
 
-import { ValAuthAxios } from "../client/Axios";
+import axios, { Axios, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
-import type { AxiosRequestConfig } from "axios";
 
 //interface
 
@@ -34,13 +33,17 @@ type ValAuthRequestResponse = {
     };
     country: string;
     securityProfile: string;
+} | {
+    type: "auth";
+    error: string;
+    country: string;
 }
 
 //class
 
 class ValAuthCore extends ValAuthEngine {
     private options: { config: ValAuthEngine.Options, data: ValAuthData };
-    private ValAuthAxios: ValAuthAxios;
+    private ValAuthAxios: Axios;
 
     public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
         super()
@@ -61,7 +64,7 @@ class ValAuthCore extends ValAuthEngine {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = new ValAuthAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     //auth
@@ -70,13 +73,13 @@ class ValAuthCore extends ValAuthEngine {
         this.access_token = token;
 
         //ENTITLEMENTS
-        const EntitlementsResponse: ValAuthAxios.Response = await this.ValAuthAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
+        const EntitlementsResponse: AxiosResponse = await this.ValAuthAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
             headers: {
                 'Authorization': `${this.token_type} ${this.access_token}`,
             },
         });
 
-        this.entitlements_token = EntitlementsResponse.response.data.entitlements_token || this.entitlements_token;
+        this.entitlements_token = EntitlementsResponse.data.entitlements_token || this.entitlements_token;
     }
 
     public async fromUrl(TokenUrl: string) {
@@ -104,7 +107,7 @@ class ValAuthCore extends ValAuthEngine {
         await this.fromToken(this.access_token);
 
         //REGION
-        const RegionResponse: ValAuthAxios.Response = await this.ValAuthAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+        const RegionResponse: AxiosResponse = await this.ValAuthAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
             id_token: this.id_token,
         }, {
             headers: {
@@ -113,22 +116,22 @@ class ValAuthCore extends ValAuthEngine {
             }
         });
 
-        this.region.pbe = RegionResponse.response.data?.affinities?.pbe || 'na';
-        this.region.live = RegionResponse.response.data?.affinities?.live || 'na';
+        this.region.pbe = RegionResponse.data?.affinities?.pbe || 'na';
+        this.region.live = RegionResponse.data?.affinities?.live || 'na';
 
         //output
         return this.toJSON();
     }
 
-    public async fromResponse(TokenResponse: ValAuthAxios.Response<ValAuthRequestResponse>) {
-        if (TokenResponse.isError || !TokenResponse.response.data.type) {
+    public async fromResponse(TokenResponse: AxiosResponse<ValAuthRequestResponse>) {
+        if (!TokenResponse.data || !TokenResponse.data.type) {
             this.isError = true;
 
             return this.toJSON();
         }
 
         //MFA
-        if (TokenResponse.response.data.type && TokenResponse.response.data.type == 'multifactor') {
+        if (TokenResponse.data.type && TokenResponse.data.type == 'multifactor') {
             this.multifactor = true;
 
             return this.toJSON();
@@ -137,31 +140,27 @@ class ValAuthCore extends ValAuthEngine {
         }
 
         //COOKIE
-        if (!TokenResponse.response.headers["set-cookie"]) {
-            throw new Error(
-                '<cookie> Cookie is undefined'
-            );
+        if (!TokenResponse.headers["set-cookie"]) {
+            throw '<cookie> Cookie is undefined';
         }
 
-        const ssid_cookie = TokenResponse.response.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
+        const ssid_cookie = TokenResponse.headers["set-cookie"].find((element: string) => /^ssid/.test(element));
 
         if (!ssid_cookie) {
-            throw new Error(
-                '<asid> Cookie is undefined'
-            );
+            throw '<asid> Cookie is undefined';
         }
 
         this.cookie.ssid = ssid_cookie;
 
         //URL
-        if (!TokenResponse.response.data.response || !TokenResponse.response.data.response?.parameters || !TokenResponse.response.data.response?.parameters?.uri) {
+        if (TokenResponse.data.type !== 'response' || !TokenResponse.data.response) {
             this.isError = true;
 
             return this.toJSON();
         }
 
         //output
-        return (await this.fromUrl(TokenResponse.response.data.response.parameters.uri));
+        return (await this.fromUrl(TokenResponse.data.response.parameters.uri));
 
     }
 }

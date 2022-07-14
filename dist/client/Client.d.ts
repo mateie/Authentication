@@ -14,6 +14,21 @@ declare namespace ValAuth {
             id_token: string;
         };
     };
+    interface Event {
+        'ready': () => void;
+        'expires': (data: ValAuth.Expire) => void;
+        'error': (data: {
+            name: 'ValAuth_Error';
+            message: string;
+            data?: any;
+        }) => void;
+    }
+}
+declare interface ValAuth {
+    emit<EventName extends keyof ValAuth.Event>(name: EventName, ...args: Parameters<ValAuth.Event[EventName]>): void;
+    on<EventName extends keyof ValAuth.Event>(name: EventName, callback: ValAuth.Event[EventName]): void;
+    once<EventName extends keyof ValAuth.Event>(name: EventName, callback: ValAuth.Event[EventName]): void;
+    off<EventName extends keyof ValAuth.Event>(name: EventName, callback?: ValAuth.Event[EventName]): void;
 }
 /**
  * Valorant Authentication

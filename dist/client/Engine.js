@@ -2,9 +2,8 @@
 //import
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CONFIG_DEFAULT = exports.CONFIG_Ciphers = exports.CONFIG_UserAgent = exports.CONFIG_ClientVersion = exports.CONFIG_ClientPlatform = exports.ValAuthEngine = void 0;
-const tslib_1 = require("tslib");
+const lib_1 = require("@valapi/lib");
 const tough_cookie_1 = require("tough-cookie");
-const toUft8_1 = tslib_1.__importDefault(require("../utils/toUft8"));
 //class
 const CONFIG_ClientVersion = `release-05.00-shipping-11-729462`;
 exports.CONFIG_ClientVersion = CONFIG_ClientVersion;
@@ -35,7 +34,7 @@ const CONFIG_DEFAULT = {
         headers: {
             "User-Agent": CONFIG_UserAgent,
             "X-Riot-ClientVersion": CONFIG_ClientVersion,
-            "X-Riot-ClientPlatform": (0, toUft8_1.default)(JSON.stringify(CONFIG_ClientPlatform)),
+            "X-Riot-ClientPlatform": (0, lib_1.toUft8)(JSON.stringify(CONFIG_ClientPlatform)),
         },
     },
     expiresIn: {
@@ -44,13 +43,14 @@ const CONFIG_DEFAULT = {
     },
 };
 exports.CONFIG_DEFAULT = CONFIG_DEFAULT;
-class ValAuthEngine {
+class ValAuthEngine extends lib_1.ValEvent {
     // class
     /**
      * Create a new ValAuth Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options = {}) {
+        super();
         this.cookie = {
             jar: new tough_cookie_1.CookieJar(),
             ssid: '',

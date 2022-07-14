@@ -1,9 +1,9 @@
 //import
 
+import { ValEvent, toUft8 } from "@valapi/lib";
+
 import { CookieJar } from "tough-cookie";
 import type { AxiosRequestConfig } from "axios";
-
-import toUft8 from "../utils/toUft8";
 
 //interface
 
@@ -89,7 +89,7 @@ const CONFIG_DEFAULT: ValAuthEngine.Options = {
     },
 }
 
-class ValAuthEngine {
+class ValAuthEngine extends ValEvent {
     protected cookie: {
         jar: CookieJar,
         ssid: string,
@@ -132,6 +132,8 @@ class ValAuthEngine {
      * @param {ValAuthEngine.Options} options Client Config
      */
     public constructor(options: ValAuthEngine.Options = {}) {
+        super();
+
         this.cookie = {
             jar: new CookieJar(),
             ssid: '',

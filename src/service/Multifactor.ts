@@ -6,13 +6,12 @@ import {
 } from "../client/Engine";
 import { ValAuthCore, type ValAuthRequestResponse } from "../client/Auth";
 
-import toUft8 from "../utils/toUft8";
+import { toUft8 } from "@valapi/lib";
 
 import { CookieJar } from "tough-cookie";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
 
-import type { AxiosRequestConfig } from "axios";
-import { ValAuthAxios } from "../client/Axios";
+import axios, { type Axios, type AxiosRequestConfig, type AxiosResponse } from "axios";
 
 //class
 
@@ -20,7 +19,7 @@ class ValAuthMultifactor {
     private options: { config: ValAuthEngine.Options, data: ValAuthData };
 
     private cookie: CookieJar;
-    private ValAuthAxios: ValAuthAxios;
+    private ValAuthAxios: Axios;
 
     public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
         this.options = options;
@@ -36,7 +35,7 @@ class ValAuthMultifactor {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = new ValAuthAxios(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
     }
 
     //auth
@@ -44,13 +43,13 @@ class ValAuthMultifactor {
     public async TwoFactor(verificationCode: number) {
         //token
         
-        const TokenResponse: ValAuthAxios.Response<ValAuthRequestResponse> = await this.ValAuthAxios.put('https://auth.riotgames.com/api/v1/authorization', {
+        const TokenResponse: AxiosResponse<ValAuthRequestResponse> = await this.ValAuthAxios.put('https://auth.riotgames.com/api/v1/authorization', {
             "type": "multifactor",
             "code": String(verificationCode),
             "rememberDevice": true,
         });
 
-        if (TokenResponse.isError === false) {
+        if (TokenResponse.data.type === 'response') {
             this.options.data.multifactor = false;
         } else {
             this.options.data.isError = true;
