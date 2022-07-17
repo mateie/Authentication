@@ -7,6 +7,6 @@ declare class ValAuthCookie {
         config: ValAuthEngine.Options;
         data: ValAuthData;
     });
-    ReAuth(): Promise<ValAuthData>;
+    ReAuthorize(): Promise<ValAuthData>;
 }
 export { ValAuthCookie };

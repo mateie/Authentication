@@ -12,7 +12,7 @@ interface ValAuthData {
     token_type: string;
     session_state: string;
     entitlements_token: string;
-    multifactor: boolean;
+    isMultifactor: boolean;
     isError: boolean;
     region: {
         pbe: string;
@@ -37,7 +37,7 @@ declare namespace ValAuthEngine {
         };
         axiosConfig?: AxiosRequestConfig;
         expiresIn?: {
-            cookie: number;
+            cookie?: number;
             token?: number;
         };
     }
@@ -61,7 +61,7 @@ declare class ValAuthEngine extends ValEvent {
     /**
      * is Multifactor Account ?
      */
-    multifactor: boolean;
+    isMultifactor: boolean;
     /**
      * is Authentication Error ?
      */
@@ -73,7 +73,10 @@ declare class ValAuthEngine extends ValEvent {
         pbe: string;
         live: string;
     };
-    protected createAt: {
+    /**
+     * Create At (date)
+     */
+    createAt: {
         cookie: number;
         token: number;
     };
@@ -82,7 +85,7 @@ declare class ValAuthEngine extends ValEvent {
      */
     config: ValAuthEngine.Options;
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuthEngine} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options?: ValAuthEngine.Options);
@@ -101,7 +104,23 @@ declare class ValAuthEngine extends ValEvent {
         config: ValAuthEngine.Options;
         data: ValAuthData;
     }): void;
+    /**
+     *
+     * @param {string} token Access Token
+     * @returns {string} Player UUID
+     */
     parsePlayerUuid(token?: string): string;
+    /**
+     * Default Client Data
+     */
+    static readonly Default: {
+        client: {
+            version: string;
+            platform: ValAuthEngine.ClientPlatfrom;
+        };
+        userAgent: string;
+        ciphers: string;
+    };
 }
 export { ValAuthEngine, CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT };
 export type { ValAuthData };

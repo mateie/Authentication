@@ -18,7 +18,7 @@ interface ValAuthData {
     token_type: string;
     session_state: string;
     entitlements_token: string;
-    multifactor: boolean;
+    isMultifactor: boolean;
     isError: boolean;
     region: {
         pbe: string,
@@ -45,7 +45,7 @@ namespace ValAuthEngine {
         };
         axiosConfig?: AxiosRequestConfig,
         expiresIn?: {
-            cookie: number,
+            cookie?: number,
             token?: number,
         };
     }
@@ -53,7 +53,7 @@ namespace ValAuthEngine {
 
 //class
 
-const CONFIG_ClientVersion: string = `release-05.00-shipping-11-729462`;
+const CONFIG_ClientVersion: string = `release-05.01-shipping-12-732296`;
 const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,
@@ -103,7 +103,7 @@ class ValAuthEngine extends ValEvent {
     /**
      * is Multifactor Account ?
      */
-    public multifactor: boolean;
+    public isMultifactor: boolean;
     /**
      * is Authentication Error ?
      */
@@ -115,7 +115,10 @@ class ValAuthEngine extends ValEvent {
         pbe: string,
         live: string,
     };
-    protected createAt: {
+    /**
+     * Create At (date)
+     */
+    public createAt: {
         cookie: number,
         token: number,
     };
@@ -128,7 +131,7 @@ class ValAuthEngine extends ValEvent {
     // class
 
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuthEngine} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     public constructor(options: ValAuthEngine.Options = {}) {
@@ -144,7 +147,7 @@ class ValAuthEngine extends ValEvent {
         this.token_type = 'Bearer';
         this.session_state = '';
         this.entitlements_token = '';
-        this.multifactor = false;
+        this.isMultifactor = false;
         this.isError = false;
         this.region = {
             pbe: 'na',
@@ -155,7 +158,7 @@ class ValAuthEngine extends ValEvent {
             token: new Date().getTime(),
         };
 
-        this.config = new Object({ ...CONFIG_DEFAULT, ...options });
+        this.config = { ...CONFIG_DEFAULT, ...options };
     }
 
     //save
@@ -176,7 +179,7 @@ class ValAuthEngine extends ValEvent {
             token_type: this.token_type,
             session_state: this.session_state,
             entitlements_token: this.entitlements_token,
-            multifactor: this.multifactor,
+            isMultifactor: this.isMultifactor,
             isError: this.isError,
             region: this.region,
             createAt: this.createAt,
@@ -194,14 +197,14 @@ class ValAuthEngine extends ValEvent {
             ssid: data.cookie.ssid,
         };
         this.access_token = data.access_token;
-        this.id_token = data.id_token;
-        this.expires_in = data.expires_in;
-        this.token_type = data.token_type;
-        this.session_state = data.session_state;
+        this.id_token = data.id_token || '';
+        this.expires_in = data.expires_in || 3600;
+        this.token_type = data.token_type || 'Bearer';
+        this.session_state = data.session_state || '';
         this.entitlements_token = data.entitlements_token;
-        this.multifactor = data.multifactor;
+        this.isMultifactor = data.isMultifactor;
         this.isError = data.isError;
-        this.region = data.region;
+        this.region =  { ...{ live: "na", pbe: "na" }, ...data.region };
         this.createAt = data.createAt;
     }
 
@@ -213,12 +216,31 @@ class ValAuthEngine extends ValEvent {
         this.fromJSON(options.data);
     }
 
+    /**
+     * 
+     * @param {string} token Access Token
+     * @returns {string} Player UUID
+     */
     public parsePlayerUuid(token: string = this.access_token): string {
         const split_token: Array<string> = String(token).split('.');
         const _token: { sub: string } = JSON.parse(Buffer.from(split_token[1], 'base64').toString())
         
         return _token.sub;
     }
+
+    //static
+
+    /**
+     * Default Client Data
+     */
+    public static readonly Default = {
+        client: {
+            version: CONFIG_ClientVersion,
+            platform: CONFIG_ClientPlatform,
+        },
+        userAgent: CONFIG_UserAgent,
+        ciphers: CONFIG_Ciphers.join(':'),
+    };
 }
 
 //export

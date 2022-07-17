@@ -35,12 +35,12 @@ class ValAuthCookie {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create({ ..._AxiosConfig, ...options.config.axiosConfig });
     }
 
     //auth
 
-    public async ReAuth() {
+    public async ReAuthorize() {
         //token
 
         const TokenResponse: AxiosResponse<ValAuthRequestResponse> = await this.ValAuthAxios.post('https://auth.riotgames.com/api/v1/authorization', {

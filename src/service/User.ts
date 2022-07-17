@@ -34,7 +34,7 @@ class ValAuthUser {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create({ ..._AxiosConfig, ...options.config.axiosConfig });
     }
 
     //auth

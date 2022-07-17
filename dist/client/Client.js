@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValAuth = void 0;
 const tslib_1 = require("tslib");
-const Engine_1 = require("../client/Engine");
+const Engine_1 = require("./Engine");
 const tough_cookie_1 = require("tough-cookie");
 const User_1 = require("../service/User");
 const Multifactor_1 = require("../service/Multifactor");
@@ -14,7 +14,7 @@ const Cookie_1 = require("../service/Cookie");
  */
 class ValAuth extends Engine_1.ValAuthEngine {
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuth} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options = {}) {
@@ -84,6 +84,17 @@ class ValAuth extends Engine_1.ValAuthEngine {
         });
     }
     /**
+     * From ssid Cookie
+     * @param {string} cookie ssid Cookie
+     * @returns {Promise<void>}
+     */
+    fromCookie(cookie) {
+        return tslib_1.__awaiter(this, void 0, void 0, function* () {
+            this.cookie.ssid = cookie;
+            yield this.refresh(true);
+        });
+    }
+    /**
      * Reconnect to the server
      * @param force force to reload (only token)
      * @returns {Promise<Array<ValAuth.Expire>>}
@@ -92,7 +103,7 @@ class ValAuth extends Engine_1.ValAuthEngine {
         var _a, _b;
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             let expiresList = [];
-            if ((new Date().getTime()) >= (this.createAt.cookie + Number((_a = this.config.expiresIn) === null || _a === void 0 ? void 0 : _a.cookie))) {
+            if ((new Date().getTime() + 10000) >= (this.createAt.cookie + Number((_a = this.config.expiresIn) === null || _a === void 0 ? void 0 : _a.cookie))) {
                 //event
                 const _event = {
                     name: "cookie",
@@ -100,14 +111,14 @@ class ValAuth extends Engine_1.ValAuthEngine {
                 };
                 this.emit("expires", _event);
                 expiresList.push(_event);
-                this.cookie.jar = new tough_cookie_1.CookieJar();
                 //uptodate
+                this.cookie.jar = new tough_cookie_1.CookieJar();
                 this.createAt = {
                     cookie: new Date().getTime(),
                     token: new Date().getTime(),
                 };
             }
-            if ((new Date().getTime()) >= (this.createAt.token + Number((_b = this.config.expiresIn) === null || _b === void 0 ? void 0 : _b.token)) || force === true) {
+            if ((new Date().getTime() + 10000) >= (this.createAt.token + Number((_b = this.config.expiresIn) === null || _b === void 0 ? void 0 : _b.token)) || force === true) {
                 //event
                 const _event = {
                     name: "token",
@@ -118,11 +129,11 @@ class ValAuth extends Engine_1.ValAuthEngine {
                 };
                 this.emit("expires", _event);
                 expiresList.push(_event);
-                this.access_token = '';
                 if (!this.cookie.ssid) {
                     return expiresList;
                 }
                 //uptodate
+                this.access_token = '';
                 this.createAt.token = new Date().getTime();
                 //auto
                 const ValCookie = new Cookie_1.ValAuthCookie({
@@ -130,7 +141,7 @@ class ValAuth extends Engine_1.ValAuthEngine {
                     data: this.toJSON(),
                 });
                 try {
-                    const ValReAuth = yield ValCookie.ReAuth();
+                    const ValReAuth = yield ValCookie.ReAuthorize();
                     if (ValReAuth.isError === true) {
                         this.emit('error', {
                             name: 'ValAuth_Error',
@@ -171,8 +182,7 @@ class ValAuth extends Engine_1.ValAuthEngine {
     static fromCookie(cookie, options) {
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
             const RsoClient = new ValAuth(options);
-            RsoClient.cookie.ssid = cookie;
-            yield RsoClient.refresh(true);
+            yield RsoClient.fromCookie(cookie);
             return RsoClient;
         });
     }

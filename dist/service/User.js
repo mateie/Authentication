@@ -23,7 +23,7 @@ class ValAuthUser {
             httpsAgent: new http_1.HttpsCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true, ciphers: Engine_1.CONFIG_Ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' }),
             httpAgent: new http_1.HttpCookieAgent({ cookies: { jar: this.cookie }, keepAlive: true }),
         };
-        this.ValAuthAxios = axios_1.default.create(new Object(Object.assign(Object.assign({}, _AxiosConfig), options.config.axiosConfig)));
+        this.ValAuthAxios = axios_1.default.create(Object.assign(Object.assign({}, _AxiosConfig), options.config.axiosConfig));
     }
     //auth
     LoginForm(username, password) {

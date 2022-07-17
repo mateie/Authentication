@@ -1,4 +1,4 @@
-import { ValAuthEngine, type ValAuthData } from "../client/Engine";
+import { ValAuthEngine, type ValAuthData } from "./Engine";
 import { CookieJar } from "tough-cookie";
 declare namespace ValAuth {
     type Expire = {
@@ -35,7 +35,7 @@ declare interface ValAuth {
  */
 declare class ValAuth extends ValAuthEngine {
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuth} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options?: ValAuthEngine.Options);
@@ -52,6 +52,12 @@ declare class ValAuth extends ValAuthEngine {
      * @returns {Promise<void>}
      */
     verify(verificationCode: number): Promise<void>;
+    /**
+     * From ssid Cookie
+     * @param {string} cookie ssid Cookie
+     * @returns {Promise<void>}
+     */
+    fromCookie(cookie: string): Promise<void>;
     /**
      * Reconnect to the server
      * @param force force to reload (only token)

@@ -4,7 +4,7 @@ import {
     ValAuthEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers, CONFIG_UserAgent,
     type ValAuthData
-} from "../client/Engine";
+} from "./Engine";
 
 import { toUft8 } from "@valapi/lib";
 
@@ -64,22 +64,24 @@ class ValAuthCore extends ValAuthEngine {
             httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
         };
 
-        this.ValAuthAxios = axios.create(new Object({ ..._AxiosConfig, ...options.config.axiosConfig }));
+        this.ValAuthAxios = axios.create({ ..._AxiosConfig, ...options.config.axiosConfig });
     }
 
     //auth
 
-    public async fromToken(token: string) {
+    private async fromToken(token: string) {
         this.access_token = token;
 
         //ENTITLEMENTS
-        const EntitlementsResponse: AxiosResponse = await this.ValAuthAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
+        const EntitlementsResponse: AxiosResponse<{ entitlements_token?: string }> = await this.ValAuthAxios.post('https://entitlements.auth.riotgames.com/api/token/v1', {}, {
             headers: {
-                'Authorization': `${this.token_type} ${this.access_token}`,
+                'Authorization': `${this.token_type || 'Bearer'} ${this.access_token}`,
             },
         });
 
-        this.entitlements_token = EntitlementsResponse.data.entitlements_token || this.entitlements_token;
+        if (EntitlementsResponse.data.entitlements_token) {
+            this.entitlements_token = EntitlementsResponse.data.entitlements_token;
+        }
     }
 
     public async fromUrl(TokenUrl: string) {
@@ -99,25 +101,27 @@ class ValAuthCore extends ValAuthEngine {
         }
 
         this.access_token = String(new URLSearchParams(Search_path).get(Search_token));
-        this.id_token = String(new URLSearchParams(Search_path).get('id_token'));
-        this.expires_in = Number(new URLSearchParams(Search_path).get('expires_in')) || 3600;
-        this.token_type = String(new URLSearchParams(Search_path).get('token_type')) || 'Bearer';
-        this.session_state = String(new URLSearchParams(Search_path).get('session_state'));
+        this.id_token = new URLSearchParams(Search_path).get('id_token') || '';
+        this.expires_in = Number(new URLSearchParams(Search_path).get('expires_in') || 3600);
+        this.token_type = new URLSearchParams(Search_path).get('token_type') || 'Bearer';
+        this.session_state = new URLSearchParams(Search_path).get('session_state') || '';
 
         await this.fromToken(this.access_token);
 
         //REGION
-        const RegionResponse: AxiosResponse = await this.ValAuthAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
-            id_token: this.id_token,
-        }, {
-            headers: {
-                'Authorization': `${this.token_type} ${this.access_token}`,
-                'X-Riot-Entitlements-JWT': this.entitlements_token,
-            }
-        });
+        if (this.id_token) {
+            const RegionResponse: AxiosResponse = await this.ValAuthAxios.put('https://riot-geo.pas.si.riotgames.com/pas/v1/product/valorant', {
+                id_token: this.id_token,
+            }, {
+                headers: {
+                    'Authorization': `${this.token_type || 'Bearer'} ${this.access_token}`,
+                    'X-Riot-Entitlements-JWT': this.entitlements_token,
+                }
+            });
 
-        this.region.pbe = RegionResponse.data?.affinities?.pbe || 'na';
-        this.region.live = RegionResponse.data?.affinities?.live || 'na';
+            this.region.pbe = RegionResponse.data?.affinities?.pbe || 'na';
+            this.region.live = RegionResponse.data?.affinities?.live || 'na';
+        }
 
         //output
         return this.toJSON();
@@ -132,11 +136,11 @@ class ValAuthCore extends ValAuthEngine {
 
         //MFA
         if (TokenResponse.data.type && TokenResponse.data.type == 'multifactor') {
-            this.multifactor = true;
+            this.isMultifactor = true;
 
             return this.toJSON();
         } else {
-            this.multifactor = false;
+            this.isMultifactor = false;
         }
 
         //COOKIE

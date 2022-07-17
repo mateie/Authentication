@@ -5,7 +5,7 @@ exports.CONFIG_DEFAULT = exports.CONFIG_Ciphers = exports.CONFIG_UserAgent = exp
 const lib_1 = require("@valapi/lib");
 const tough_cookie_1 = require("tough-cookie");
 //class
-const CONFIG_ClientVersion = `release-05.00-shipping-11-729462`;
+const CONFIG_ClientVersion = `release-05.01-shipping-12-732296`;
 exports.CONFIG_ClientVersion = CONFIG_ClientVersion;
 const CONFIG_ClientPlatform = {
     "platformType": `PC`,
@@ -46,7 +46,7 @@ exports.CONFIG_DEFAULT = CONFIG_DEFAULT;
 class ValAuthEngine extends lib_1.ValEvent {
     // class
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuthEngine} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options = {}) {
@@ -61,7 +61,7 @@ class ValAuthEngine extends lib_1.ValEvent {
         this.token_type = 'Bearer';
         this.session_state = '';
         this.entitlements_token = '';
-        this.multifactor = false;
+        this.isMultifactor = false;
         this.isError = false;
         this.region = {
             pbe: 'na',
@@ -71,7 +71,7 @@ class ValAuthEngine extends lib_1.ValEvent {
             cookie: new Date().getTime(),
             token: new Date().getTime(),
         };
-        this.config = new Object(Object.assign(Object.assign({}, CONFIG_DEFAULT), options));
+        this.config = Object.assign(Object.assign({}, CONFIG_DEFAULT), options);
     }
     //save
     /**
@@ -90,7 +90,7 @@ class ValAuthEngine extends lib_1.ValEvent {
             token_type: this.token_type,
             session_state: this.session_state,
             entitlements_token: this.entitlements_token,
-            multifactor: this.multifactor,
+            isMultifactor: this.isMultifactor,
             isError: this.isError,
             region: this.region,
             createAt: this.createAt,
@@ -107,14 +107,14 @@ class ValAuthEngine extends lib_1.ValEvent {
             ssid: data.cookie.ssid,
         };
         this.access_token = data.access_token;
-        this.id_token = data.id_token;
-        this.expires_in = data.expires_in;
-        this.token_type = data.token_type;
-        this.session_state = data.session_state;
+        this.id_token = data.id_token || '';
+        this.expires_in = data.expires_in || 3600;
+        this.token_type = data.token_type || 'Bearer';
+        this.session_state = data.session_state || '';
         this.entitlements_token = data.entitlements_token;
-        this.multifactor = data.multifactor;
+        this.isMultifactor = data.isMultifactor;
         this.isError = data.isError;
-        this.region = data.region;
+        this.region = Object.assign({ live: "na", pbe: "na" }, data.region);
         this.createAt = data.createAt;
     }
     //engine
@@ -122,6 +122,11 @@ class ValAuthEngine extends lib_1.ValEvent {
         this.config = options.config;
         this.fromJSON(options.data);
     }
+    /**
+     *
+     * @param {string} token Access Token
+     * @returns {string} Player UUID
+     */
     parsePlayerUuid(token = this.access_token) {
         const split_token = String(token).split('.');
         const _token = JSON.parse(Buffer.from(split_token[1], 'base64').toString());
@@ -129,3 +134,15 @@ class ValAuthEngine extends lib_1.ValEvent {
     }
 }
 exports.ValAuthEngine = ValAuthEngine;
+//static
+/**
+ * Default Client Data
+ */
+ValAuthEngine.Default = {
+    client: {
+        version: CONFIG_ClientVersion,
+        platform: CONFIG_ClientPlatform,
+    },
+    userAgent: CONFIG_UserAgent,
+    ciphers: CONFIG_Ciphers.join(':'),
+};

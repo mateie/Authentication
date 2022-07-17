@@ -3,7 +3,7 @@
 import {
     ValAuthEngine,
     type ValAuthData
-} from "../client/Engine";
+} from "./Engine";
 import { CookieJar } from "tough-cookie";
 
 import { ValAuthUser } from "../service/User";
@@ -51,7 +51,7 @@ declare interface ValAuth {
 class ValAuth extends ValAuthEngine {
 
     /**
-     * Create a new ValAuth Client
+     * Create a new {@link ValAuth} Client
      * @param {ValAuthEngine.Options} options Client Config
      */
     public constructor(options: ValAuthEngine.Options = {}) {
@@ -126,6 +126,17 @@ class ValAuth extends ValAuthEngine {
     }
 
     /**
+     * From ssid Cookie
+     * @param {string} cookie ssid Cookie
+     * @returns {Promise<void>}
+     */
+    public async fromCookie(cookie: string): Promise<void> {
+        this.cookie.ssid = cookie;
+
+        await this.refresh(true);
+    }
+
+    /**
      * Reconnect to the server
      * @param force force to reload (only token)
      * @returns {Promise<Array<ValAuth.Expire>>}
@@ -133,7 +144,7 @@ class ValAuth extends ValAuthEngine {
     public async refresh(force?: Boolean): Promise<Array<ValAuth.Expire>> {
         let expiresList: Array<ValAuth.Expire> = [];
 
-        if ((new Date().getTime()) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
+        if ((new Date().getTime() + 10000) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
             //event
             const _event: ValAuth.Expire = {
                 name: "cookie",
@@ -142,16 +153,16 @@ class ValAuth extends ValAuthEngine {
             this.emit("expires", _event);
             expiresList.push(_event);
 
+            //uptodate
             this.cookie.jar = new CookieJar();
 
-            //uptodate
             this.createAt = {
                 cookie: new Date().getTime(),
                 token: new Date().getTime(),
             };
         }
 
-        if ((new Date().getTime()) >= (this.createAt.token + Number(this.config.expiresIn?.token)) || force === true) {
+        if ((new Date().getTime() + 10000) >= (this.createAt.token + Number(this.config.expiresIn?.token)) || force === true) {
             //event
             const _event: ValAuth.Expire = {
                 name: "token",
@@ -163,13 +174,13 @@ class ValAuth extends ValAuthEngine {
             this.emit("expires", _event);
             expiresList.push(_event);
 
-            this.access_token = '';
-
             if (!this.cookie.ssid) {
                 return expiresList;
             }
 
             //uptodate
+            this.access_token = '';
+            
             this.createAt.token = new Date().getTime();
 
             //auto
@@ -179,7 +190,7 @@ class ValAuth extends ValAuthEngine {
             });
 
             try {
-                const ValReAuth = await ValCookie.ReAuth();
+                const ValReAuth = await ValCookie.ReAuthorize();
 
                 if (ValReAuth.isError === true) {
                     this.emit('error', {
@@ -224,9 +235,7 @@ class ValAuth extends ValAuthEngine {
      */
     public static async fromCookie(cookie: string, options?: ValAuthEngine.Options): Promise<ValAuth> {
         const RsoClient = new ValAuth(options);
-        RsoClient.cookie.ssid = cookie;
-
-        await RsoClient.refresh(true);
+        await RsoClient.fromCookie(cookie);
 
         return RsoClient;
     }

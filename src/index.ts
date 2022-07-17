@@ -2,7 +2,6 @@
 
 import {
     ValAuthEngine,
-    CONFIG_DEFAULT,
     type ValAuthData
 } from "./client/Engine";
 
@@ -14,7 +13,6 @@ import {
 
 export {
     ValAuthEngine,
-    CONFIG_DEFAULT as ValAuthEngineDefault,
     type ValAuthData
 };
 
