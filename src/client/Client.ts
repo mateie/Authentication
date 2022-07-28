@@ -141,15 +141,15 @@ class ValAuth extends ValAuthEngine {
      * @param force force to reload (only token)
      * @returns {Promise<Array<ValAuth.Expire>>}
      */
-    public async refresh(force?: Boolean): Promise<Array<ValAuth.Expire>> {
-        let expiresList: Array<ValAuth.Expire> = [];
+    public async refresh(force?: boolean): Promise<Array<ValAuth.Expire>> {
+        const expiresList: Array<ValAuth.Expire> = [];
 
         if ((new Date().getTime() + 10000) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
             //event
             const _event: ValAuth.Expire = {
                 name: "cookie",
                 data: this.cookie,
-            }
+            };
             this.emit("expires", _event);
             expiresList.push(_event);
 
@@ -170,7 +170,7 @@ class ValAuth extends ValAuthEngine {
                     access_token: this.access_token,
                     id_token: this.id_token,
                 },
-            }
+            };
             this.emit("expires", _event);
             expiresList.push(_event);
 

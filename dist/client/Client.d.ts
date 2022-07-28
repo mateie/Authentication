@@ -63,7 +63,7 @@ declare class ValAuth extends ValAuthEngine {
      * @param force force to reload (only token)
      * @returns {Promise<Array<ValAuth.Expire>>}
      */
-    refresh(force?: Boolean): Promise<Array<ValAuth.Expire>>;
+    refresh(force?: boolean): Promise<Array<ValAuth.Expire>>;
     /**
      * From {@link toJSON toJSON()} data
      * @param {ValAuthData} data {@link toJSON toJSON()} data

@@ -53,14 +53,14 @@ namespace ValAuthEngine {
 
 //class
 
-const CONFIG_ClientVersion: string = `release-05.01-shipping-12-732296`;
+const CONFIG_ClientVersion = `release-05.01-shipping-12-732296`;
 const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,
     "platformOSVersion": `10.0.19042.1.256.64bit`,
     "platformChipset": `Unknown`,
 };
-const CONFIG_UserAgent: string = `RiotClient/53.0.0.4494832.4470164 %s (Windows;10;;Professional, x64)`;
+const CONFIG_UserAgent = `RiotClient/53.0.0.4494832.4470164 %s (Windows;10;;Professional, x64)`;
 
 const CONFIG_Ciphers: Array<string> = [
     'TLS_CHACHA20_POLY1305_SHA256',
@@ -87,7 +87,7 @@ const CONFIG_DEFAULT: ValAuthEngine.Options = {
         cookie: 2592000000,
         token: 3600000,
     },
-}
+};
 
 class ValAuthEngine extends ValEvent {
     protected cookie: {
@@ -183,7 +183,7 @@ class ValAuthEngine extends ValEvent {
             isError: this.isError,
             region: this.region,
             createAt: this.createAt,
-        }
+        };
     }
 
     /**
@@ -223,7 +223,7 @@ class ValAuthEngine extends ValEvent {
      */
     public parsePlayerUuid(token: string = this.access_token): string {
         const split_token: Array<string> = String(token).split('.');
-        const _token: { sub: string } = JSON.parse(Buffer.from(split_token[1], 'base64').toString())
+        const _token: { sub: string } = JSON.parse(Buffer.from(split_token[1], 'base64').toString());
         
         return _token.sub;
     }

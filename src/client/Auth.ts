@@ -10,7 +10,6 @@ import { toUft8 } from "@valapi/lib";
 
 import axios, { Axios, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
-
 //interface
 
 type ValAuthRequestResponse = {
@@ -46,7 +45,7 @@ class ValAuthCore extends ValAuthEngine {
     private ValAuthAxios: Axios;
 
     public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
-        super()
+        super();
         this.build(options);
 
         this.options = options;
@@ -91,7 +90,7 @@ class ValAuthCore extends ValAuthEngine {
         let Search_token = 'access_token';
         if (!Search_path) {
             if (!Search_URL.hash) {
-                this.isError = true
+                this.isError = true;
 
                 return this.toJSON();
             } else {

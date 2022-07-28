@@ -102,7 +102,7 @@ class ValAuth extends Engine_1.ValAuthEngine {
     refresh(force) {
         var _a, _b;
         return tslib_1.__awaiter(this, void 0, void 0, function* () {
-            let expiresList = [];
+            const expiresList = [];
             if ((new Date().getTime() + 10000) >= (this.createAt.cookie + Number((_a = this.config.expiresIn) === null || _a === void 0 ? void 0 : _a.cookie))) {
                 //event
                 const _event = {
