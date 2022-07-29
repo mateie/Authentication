@@ -2,9 +2,9 @@
 
 import {
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers,
-    type ValAuthEngine, type ValAuthData
+    type ValAuthEngine
 } from "../client/Engine";
-import { ValAuthCore, type ValAuthRequestResponse } from "../client/Auth";
+import { ValAuthCore } from "../client/Auth";
 
 import { toUft8 } from "@valapi/lib";
 
@@ -16,12 +16,12 @@ import axios, { type Axios, type AxiosRequestConfig, type AxiosResponse } from "
 //class
 
 class ValAuthMultifactor {
-    private options: { config: ValAuthEngine.Options, data: ValAuthData };
+    private options: { config: ValAuthEngine.Options, data: ValAuthEngine.Json };
 
     private cookie: CookieJar;
     private ValAuthAxios: Axios;
 
-    public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
+    public constructor(options: { config: ValAuthEngine.Options, data: ValAuthEngine.Json }) {
         this.options = options;
 
         this.cookie = CookieJar.fromJSON(JSON.stringify(options.data.cookie.jar));
@@ -42,8 +42,8 @@ class ValAuthMultifactor {
 
     public async TwoFactor(verificationCode: number) {
         //token
-        
-        const TokenResponse: AxiosResponse<ValAuthRequestResponse> = await this.ValAuthAxios.put('https://auth.riotgames.com/api/v1/authorization', {
+
+        const TokenResponse: AxiosResponse<ValAuthCore.TokenResponse> = await this.ValAuthAxios.put('https://auth.riotgames.com/api/v1/authorization', {
             "type": "multifactor",
             "code": String(verificationCode),
             "rememberDevice": true,

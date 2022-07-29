@@ -14,7 +14,7 @@ const Cookie_1 = require("../service/Cookie");
  */
 class ValAuth extends Engine_1.ValAuthEngine {
     /**
-     * Create a new {@link ValAuth} Client
+     * Create a new {@link ValAuth Client}
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options = {}) {
@@ -112,11 +112,8 @@ class ValAuth extends Engine_1.ValAuthEngine {
                 this.emit("expires", _event);
                 expiresList.push(_event);
                 //uptodate
+                this.createAt.cookie = new Date().getTime();
                 this.cookie.jar = new tough_cookie_1.CookieJar();
-                this.createAt = {
-                    cookie: new Date().getTime(),
-                    token: new Date().getTime(),
-                };
             }
             if ((new Date().getTime() + 10000) >= (this.createAt.token + Number((_b = this.config.expiresIn) === null || _b === void 0 ? void 0 : _b.token)) || force === true) {
                 //event
@@ -163,8 +160,8 @@ class ValAuth extends Engine_1.ValAuthEngine {
     }
     //static
     /**
-     * From {@link toJSON toJSON()} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     *
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @param {ValAuthEngine.Options} options Client Config
      * @returns {ValAuth}
      */

@@ -1,9 +1,6 @@
 //import
 
-import {
-    ValAuthEngine,
-    type ValAuthData
-} from "./Engine";
+import { ValAuthEngine } from "./Engine";
 import { CookieJar } from "tough-cookie";
 
 import { ValAuthUser } from "../service/User";
@@ -13,6 +10,9 @@ import { ValAuthCookie } from "../service/Cookie";
 //interface
 
 namespace ValAuth {
+    /**
+     * Client Expire Event
+     */
     export type Expire = {
         name: 'cookie';
         data: {
@@ -27,6 +27,9 @@ namespace ValAuth {
         };
     };
 
+    /**
+     * Client Events
+     */
     export interface Event {
         'ready': () => void;
         'expires': (data: ValAuth.Expire) => void;
@@ -51,7 +54,7 @@ declare interface ValAuth {
 class ValAuth extends ValAuthEngine {
 
     /**
-     * Create a new {@link ValAuth} Client
+     * Create a new {@link ValAuth Client}
      * @param {ValAuthEngine.Options} options Client Config
      */
     public constructor(options: ValAuthEngine.Options = {}) {
@@ -154,12 +157,9 @@ class ValAuth extends ValAuthEngine {
             expiresList.push(_event);
 
             //uptodate
-            this.cookie.jar = new CookieJar();
+            this.createAt.cookie = new Date().getTime();
 
-            this.createAt = {
-                cookie: new Date().getTime(),
-                token: new Date().getTime(),
-            };
+            this.cookie.jar = new CookieJar();
         }
 
         if ((new Date().getTime() + 10000) >= (this.createAt.token + Number(this.config.expiresIn?.token)) || force === true) {
@@ -180,7 +180,7 @@ class ValAuth extends ValAuthEngine {
 
             //uptodate
             this.access_token = '';
-            
+
             this.createAt.token = new Date().getTime();
 
             //auto
@@ -215,12 +215,12 @@ class ValAuth extends ValAuthEngine {
     //static
 
     /**
-     * From {@link toJSON toJSON()} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     * 
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @param {ValAuthEngine.Options} options Client Config
      * @returns {ValAuth}
      */
-    public static fromJSON(data: ValAuthData, options?: ValAuthEngine.Options): ValAuth {
+    public static fromJSON(data: ValAuthEngine.Json, options?: ValAuthEngine.Options): ValAuth {
         const RsoClient = new ValAuth(options);
         RsoClient.fromJSON(data);
 

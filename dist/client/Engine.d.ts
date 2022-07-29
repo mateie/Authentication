@@ -1,35 +1,44 @@
 import { ValEvent } from "@valapi/lib";
 import { CookieJar } from "tough-cookie";
 import type { AxiosRequestConfig } from "axios";
-interface ValAuthData {
-    cookie: {
-        jar: CookieJar.Serialized;
-        ssid: string;
-    };
-    access_token: string;
-    id_token: string;
-    expires_in: number;
-    token_type: string;
-    session_state: string;
-    entitlements_token: string;
-    isMultifactor: boolean;
-    isError: boolean;
-    region: {
-        pbe: string;
-        live: string;
-    };
-    createAt: {
-        cookie: number;
-        token: number;
-    };
-}
 declare namespace ValAuthEngine {
+    /**
+     * Client Data
+     */
+    interface Json {
+        cookie: {
+            jar: CookieJar.Serialized;
+            ssid: string;
+        };
+        access_token: string;
+        id_token: string;
+        expires_in: number;
+        token_type: string;
+        session_state: string;
+        entitlements_token: string;
+        isMultifactor: boolean;
+        isError: boolean;
+        region: {
+            pbe: string;
+            live: string;
+        };
+        createAt: {
+            cookie: number;
+            token: number;
+        };
+    }
+    /**
+     * Client Platfrom
+     */
     interface ClientPlatfrom {
         "platformType": string;
         "platformOS": string;
         "platformOSVersion": string;
         "platformChipset": string;
     }
+    /**
+     * Client Config
+     */
     interface Options {
         client?: {
             version?: string;
@@ -90,28 +99,28 @@ declare class ValAuthEngine extends ValEvent {
      */
     constructor(options?: ValAuthEngine.Options);
     /**
-     * To {@link ValAuthData save} data
-     * @returns {ValAuthData}
+     *
+     * @returns {ValAuthEngine.Json}
      */
-    toJSON(): ValAuthData;
+    toJSON(): ValAuthEngine.Json;
     /**
-     * From {@link ValAuthData save} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     *
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @returns {void}
      */
-    fromJSON(data: ValAuthData): void;
+    fromJSON(data: ValAuthEngine.Json): void;
     protected build(options: {
         config: ValAuthEngine.Options;
-        data: ValAuthData;
+        data: ValAuthEngine.Json;
     }): void;
     /**
      *
      * @param {string} token Access Token
-     * @returns {string} Player UUID
+     * @returns {string} Subject
      */
-    parsePlayerUuid(token?: string): string;
+    parseToken(token?: string): string;
     /**
-     * Default Client Data
+     * Default Client Config
      */
     static readonly Default: {
         client: {
@@ -120,7 +129,7 @@ declare class ValAuthEngine extends ValEvent {
         };
         userAgent: string;
         ciphers: string;
+        config: ValAuthEngine.Options;
     };
 }
 export { ValAuthEngine, CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT };
-export type { ValAuthData };

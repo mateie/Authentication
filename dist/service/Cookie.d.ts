@@ -1,12 +1,12 @@
-import { type ValAuthEngine, type ValAuthData } from "../client/Engine";
+import { type ValAuthEngine } from "../client/Engine";
 declare class ValAuthCookie {
     private options;
     private cookie;
     private ValAuthAxios;
     constructor(options: {
         config: ValAuthEngine.Options;
-        data: ValAuthData;
+        data: ValAuthEngine.Json;
     });
-    ReAuthorize(): Promise<ValAuthData>;
+    ReAuthorize(): Promise<ValAuthEngine.Json>;
 }
 export { ValAuthCookie };

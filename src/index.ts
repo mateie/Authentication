@@ -2,7 +2,6 @@
 
 import {
     ValAuthEngine,
-    type ValAuthData
 } from "./client/Engine";
 
 import {
@@ -13,7 +12,6 @@ import {
 
 export {
     ValAuthEngine,
-    type ValAuthData
 };
 
 export {

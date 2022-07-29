@@ -1,6 +1,9 @@
-import { ValAuthEngine, type ValAuthData } from "./Engine";
+import { ValAuthEngine } from "./Engine";
 import { CookieJar } from "tough-cookie";
 declare namespace ValAuth {
+    /**
+     * Client Expire Event
+     */
     type Expire = {
         name: 'cookie';
         data: {
@@ -14,6 +17,9 @@ declare namespace ValAuth {
             id_token: string;
         };
     };
+    /**
+     * Client Events
+     */
     interface Event {
         'ready': () => void;
         'expires': (data: ValAuth.Expire) => void;
@@ -35,7 +41,7 @@ declare interface ValAuth {
  */
 declare class ValAuth extends ValAuthEngine {
     /**
-     * Create a new {@link ValAuth} Client
+     * Create a new {@link ValAuth Client}
      * @param {ValAuthEngine.Options} options Client Config
      */
     constructor(options?: ValAuthEngine.Options);
@@ -65,12 +71,12 @@ declare class ValAuth extends ValAuthEngine {
      */
     refresh(force?: boolean): Promise<Array<ValAuth.Expire>>;
     /**
-     * From {@link toJSON toJSON()} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     *
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @param {ValAuthEngine.Options} options Client Config
      * @returns {ValAuth}
      */
-    static fromJSON(data: ValAuthData, options?: ValAuthEngine.Options): ValAuth;
+    static fromJSON(data: ValAuthEngine.Json, options?: ValAuthEngine.Options): ValAuth;
     /**
      * From ssid Cookie
      * @param {string} cookie ssid Cookie

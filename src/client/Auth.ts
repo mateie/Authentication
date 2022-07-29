@@ -2,49 +2,52 @@
 
 import {
     ValAuthEngine,
-    CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers, CONFIG_UserAgent,
-    type ValAuthData
+    CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_Ciphers, CONFIG_UserAgent
 } from "./Engine";
 
 import { toUft8 } from "@valapi/lib";
 
-import axios, { Axios, type AxiosRequestConfig, type AxiosResponse } from "axios";
-import { HttpsCookieAgent, HttpCookieAgent } from "http-cookie-agent/http";
+import axios, { Axios, type AxiosResponse } from "axios";
+import { HttpsCookieAgent, HttpCookieAgent, type CookieAgentOptions } from "http-cookie-agent/http";
+import type { AgentOptions as HttpsAgentOptions } from "https";
+import type { AgentOptions as HttpAgentOptions } from "http";
 //interface
 
-type ValAuthRequestResponse = {
-    type: "response";
-    response: {
-        mode: string,
-        parameters: {
-            uri: string
-        },
-    };
-    country: string;
-} | {
-    type: "multifactor";
-    multifactor: {
-        email: string,
-        method: string,
-        methods: Array<string>,
-        multiFactorCodeLength: number,
-        mfaVersion: string,
-    };
-    country: string;
-    securityProfile: string;
-} | {
-    type: "auth";
-    error: string;
-    country: string;
+namespace ValAuthCore {
+    export type TokenResponse = {
+        type: "response";
+        response: {
+            mode: string,
+            parameters: {
+                uri: string
+            },
+        };
+        country: string;
+    } | {
+        type: "multifactor";
+        multifactor: {
+            email: string,
+            method: string,
+            methods: Array<string>,
+            multiFactorCodeLength: number,
+            mfaVersion: string,
+        };
+        country: string;
+        securityProfile: string;
+    } | {
+        type: "auth";
+        error: string;
+        country: string;
+    }
 }
 
 //class
 
 class ValAuthCore extends ValAuthEngine {
-    private options: { config: ValAuthEngine.Options, data: ValAuthData };
+    private options: { config: ValAuthEngine.Options, data: ValAuthEngine.Json };
     private ValAuthAxios: Axios;
 
-    public constructor(options: { config: ValAuthEngine.Options, data: ValAuthData }) {
+    public constructor(options: { config: ValAuthEngine.Options, data: ValAuthEngine.Json }) {
         super();
         this.build(options);
 
@@ -52,18 +55,27 @@ class ValAuthCore extends ValAuthEngine {
 
         //axios
 
-        const _AxiosConfig: AxiosRequestConfig = {
-            headers: {
-                Cookie: this.cookie.ssid,
-                "User-Agent": CONFIG_UserAgent,
-                "X-Riot-ClientVersion": this.config.client?.version || CONFIG_ClientVersion,
-                "X-Riot-ClientPlatform": toUft8(JSON.stringify(this.config.client?.platform || CONFIG_ClientPlatform)),
-            },
-            httpsAgent: new HttpsCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true, ciphers: CONFIG_Ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' }),
-            httpAgent: new HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
-        };
+        let HttpsConfig: HttpsAgentOptions & CookieAgentOptions = { cookies: { jar: this.cookie.jar }, keepAlive: true, ciphers: CONFIG_Ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' };
+        let HttpConfig: HttpAgentOptions & CookieAgentOptions = { cookies: { jar: this.cookie.jar }, keepAlive: true };
 
-        this.ValAuthAxios = axios.create({ ..._AxiosConfig, ...options.config.axiosConfig });
+        if (options.config.axiosConfig?.proxy && typeof options.config.axiosConfig?.proxy !== 'boolean') {
+            HttpsConfig = { ...HttpsConfig, ...{ port: options.config.axiosConfig?.proxy?.port, host: options.config.axiosConfig?.proxy?.host } };
+            HttpConfig = { ...HttpConfig, ...{ port: options.config.axiosConfig?.proxy?.port, host: options.config.axiosConfig?.proxy?.host } };
+        }
+
+        this.ValAuthAxios = axios.create({
+            ...{
+                headers: {
+                    Cookie: this.cookie.ssid,
+                    "User-Agent": CONFIG_UserAgent,
+                    "X-Riot-ClientVersion": this.config.client?.version || CONFIG_ClientVersion,
+                    "X-Riot-ClientPlatform": toUft8(JSON.stringify(this.config.client?.platform || CONFIG_ClientPlatform)),
+                },
+                httpsAgent: new HttpsCookieAgent(HttpsConfig),
+                httpAgent: new HttpCookieAgent(HttpConfig),
+            },
+            ...options.config.axiosConfig
+        });
     }
 
     //auth
@@ -126,7 +138,7 @@ class ValAuthCore extends ValAuthEngine {
         return this.toJSON();
     }
 
-    public async fromResponse(TokenResponse: AxiosResponse<ValAuthRequestResponse>) {
+    public async fromResponse(TokenResponse: AxiosResponse<ValAuthCore.TokenResponse>) {
         if (!TokenResponse.data || !TokenResponse.data.type) {
             this.isError = true;
 
@@ -172,8 +184,4 @@ class ValAuthCore extends ValAuthEngine {
 
 export {
     ValAuthCore
-};
-
-export type {
-    ValAuthRequestResponse
 };

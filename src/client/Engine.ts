@@ -7,37 +7,46 @@ import type { AxiosRequestConfig } from "axios";
 
 //interface
 
-interface ValAuthData {
-    cookie: {
-        jar: CookieJar.Serialized,
-        ssid: string,
-    };
-    access_token: string;
-    id_token: string;
-    expires_in: number;
-    token_type: string;
-    session_state: string;
-    entitlements_token: string;
-    isMultifactor: boolean;
-    isError: boolean;
-    region: {
-        pbe: string,
-        live: string,
-    };
-    createAt: {
-        cookie: number,
-        token: number,
-    };
-}
-
 namespace ValAuthEngine {
+    /**
+     * Client Data
+     */
+    export interface Json {
+        cookie: {
+            jar: CookieJar.Serialized,
+            ssid: string,
+        };
+        access_token: string;
+        id_token: string;
+        expires_in: number;
+        token_type: string;
+        session_state: string;
+        entitlements_token: string;
+        isMultifactor: boolean;
+        isError: boolean;
+        region: {
+            pbe: string,
+            live: string,
+        };
+        createAt: {
+            cookie: number,
+            token: number,
+        };
+    }
+
+    /**
+     * Client Platfrom
+     */
     export interface ClientPlatfrom {
         "platformType": string;
         "platformOS": string;
         "platformOSVersion": string;
         "platformChipset": string;
     }
-    
+
+    /**
+     * Client Config
+     */
     export interface Options {
         client?: {
             version?: string,
@@ -164,10 +173,10 @@ class ValAuthEngine extends ValEvent {
     //save
 
     /**
-     * To {@link ValAuthData save} data
-     * @returns {ValAuthData}
+     * 
+     * @returns {ValAuthEngine.Json}
      */
-    public toJSON(): ValAuthData {
+    public toJSON(): ValAuthEngine.Json {
         return {
             cookie: {
                 jar: this.cookie.jar.toJSON(),
@@ -187,11 +196,11 @@ class ValAuthEngine extends ValEvent {
     }
 
     /**
-     * From {@link ValAuthData save} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     * 
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @returns {void}
      */
-    public fromJSON(data: ValAuthData): void {
+    public fromJSON(data: ValAuthEngine.Json): void {
         this.cookie = {
             jar: CookieJar.fromJSON(JSON.stringify(data.cookie.jar)),
             ssid: data.cookie.ssid,
@@ -204,13 +213,13 @@ class ValAuthEngine extends ValEvent {
         this.entitlements_token = data.entitlements_token;
         this.isMultifactor = data.isMultifactor;
         this.isError = data.isError;
-        this.region =  { ...{ live: "na", pbe: "na" }, ...data.region };
+        this.region = { ...{ live: "na", pbe: "na" }, ...data.region };
         this.createAt = data.createAt;
     }
 
     //engine
 
-    protected build(options: { config: ValAuthEngine.Options, data: ValAuthData }): void {
+    protected build(options: { config: ValAuthEngine.Options, data: ValAuthEngine.Json }): void {
         this.config = options.config;
 
         this.fromJSON(options.data);
@@ -219,19 +228,19 @@ class ValAuthEngine extends ValEvent {
     /**
      * 
      * @param {string} token Access Token
-     * @returns {string} Player UUID
+     * @returns {string} Subject
      */
-    public parsePlayerUuid(token: string = this.access_token): string {
+    public parseToken(token: string = this.access_token): string {
         const split_token: Array<string> = String(token).split('.');
         const _token: { sub: string } = JSON.parse(Buffer.from(split_token[1], 'base64').toString());
-        
+
         return _token.sub;
     }
 
     //static
 
     /**
-     * Default Client Data
+     * Default Client Config
      */
     public static readonly Default = {
         client: {
@@ -240,6 +249,7 @@ class ValAuthEngine extends ValEvent {
         },
         userAgent: CONFIG_UserAgent,
         ciphers: CONFIG_Ciphers.join(':'),
+        config: CONFIG_DEFAULT,
     };
 }
 
@@ -248,8 +258,4 @@ class ValAuthEngine extends ValEvent {
 export {
     ValAuthEngine,
     CONFIG_ClientPlatform, CONFIG_ClientVersion, CONFIG_UserAgent, CONFIG_Ciphers, CONFIG_DEFAULT
-};
-
-export type {
-    ValAuthData
 };

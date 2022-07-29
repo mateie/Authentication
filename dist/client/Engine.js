@@ -75,8 +75,8 @@ class ValAuthEngine extends lib_1.ValEvent {
     }
     //save
     /**
-     * To {@link ValAuthData save} data
-     * @returns {ValAuthData}
+     *
+     * @returns {ValAuthEngine.Json}
      */
     toJSON() {
         return {
@@ -97,8 +97,8 @@ class ValAuthEngine extends lib_1.ValEvent {
         };
     }
     /**
-     * From {@link ValAuthData save} data
-     * @param {ValAuthData} data {@link toJSON toJSON()} data
+     *
+     * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @returns {void}
      */
     fromJSON(data) {
@@ -125,9 +125,9 @@ class ValAuthEngine extends lib_1.ValEvent {
     /**
      *
      * @param {string} token Access Token
-     * @returns {string} Player UUID
+     * @returns {string} Subject
      */
-    parsePlayerUuid(token = this.access_token) {
+    parseToken(token = this.access_token) {
         const split_token = String(token).split('.');
         const _token = JSON.parse(Buffer.from(split_token[1], 'base64').toString());
         return _token.sub;
@@ -136,7 +136,7 @@ class ValAuthEngine extends lib_1.ValEvent {
 exports.ValAuthEngine = ValAuthEngine;
 //static
 /**
- * Default Client Data
+ * Default Client Config
  */
 ValAuthEngine.Default = {
     client: {
@@ -145,4 +145,5 @@ ValAuthEngine.Default = {
     },
     userAgent: CONFIG_UserAgent,
     ciphers: CONFIG_Ciphers.join(':'),
+    config: CONFIG_DEFAULT,
 };

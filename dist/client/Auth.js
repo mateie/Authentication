@@ -10,22 +10,27 @@ const http_1 = require("http-cookie-agent/http");
 //class
 class ValAuthCore extends Engine_1.ValAuthEngine {
     constructor(options) {
-        var _a, _b;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         super();
         this.build(options);
         this.options = options;
         //axios
-        const _AxiosConfig = {
+        let HttpsConfig = { cookies: { jar: this.cookie.jar }, keepAlive: true, ciphers: Engine_1.CONFIG_Ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' };
+        let HttpConfig = { cookies: { jar: this.cookie.jar }, keepAlive: true };
+        if (((_a = options.config.axiosConfig) === null || _a === void 0 ? void 0 : _a.proxy) && typeof ((_b = options.config.axiosConfig) === null || _b === void 0 ? void 0 : _b.proxy) !== 'boolean') {
+            HttpsConfig = Object.assign(Object.assign({}, HttpsConfig), { port: (_d = (_c = options.config.axiosConfig) === null || _c === void 0 ? void 0 : _c.proxy) === null || _d === void 0 ? void 0 : _d.port, host: (_f = (_e = options.config.axiosConfig) === null || _e === void 0 ? void 0 : _e.proxy) === null || _f === void 0 ? void 0 : _f.host });
+            HttpConfig = Object.assign(Object.assign({}, HttpConfig), { port: (_h = (_g = options.config.axiosConfig) === null || _g === void 0 ? void 0 : _g.proxy) === null || _h === void 0 ? void 0 : _h.port, host: (_k = (_j = options.config.axiosConfig) === null || _j === void 0 ? void 0 : _j.proxy) === null || _k === void 0 ? void 0 : _k.host });
+        }
+        this.ValAuthAxios = axios_1.default.create(Object.assign({
             headers: {
                 Cookie: this.cookie.ssid,
                 "User-Agent": Engine_1.CONFIG_UserAgent,
-                "X-Riot-ClientVersion": ((_a = this.config.client) === null || _a === void 0 ? void 0 : _a.version) || Engine_1.CONFIG_ClientVersion,
-                "X-Riot-ClientPlatform": (0, lib_1.toUft8)(JSON.stringify(((_b = this.config.client) === null || _b === void 0 ? void 0 : _b.platform) || Engine_1.CONFIG_ClientPlatform)),
+                "X-Riot-ClientVersion": ((_l = this.config.client) === null || _l === void 0 ? void 0 : _l.version) || Engine_1.CONFIG_ClientVersion,
+                "X-Riot-ClientPlatform": (0, lib_1.toUft8)(JSON.stringify(((_m = this.config.client) === null || _m === void 0 ? void 0 : _m.platform) || Engine_1.CONFIG_ClientPlatform)),
             },
-            httpsAgent: new http_1.HttpsCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true, ciphers: Engine_1.CONFIG_Ciphers.join(':'), honorCipherOrder: true, minVersion: 'TLSv1.2', maxVersion: 'TLSv1.3' }),
-            httpAgent: new http_1.HttpCookieAgent({ cookies: { jar: this.cookie.jar }, keepAlive: true }),
-        };
-        this.ValAuthAxios = axios_1.default.create(Object.assign(Object.assign({}, _AxiosConfig), options.config.axiosConfig));
+            httpsAgent: new http_1.HttpsCookieAgent(HttpsConfig),
+            httpAgent: new http_1.HttpCookieAgent(HttpConfig),
+        }, options.config.axiosConfig));
     }
     //auth
     fromToken(token) {
