@@ -51,7 +51,7 @@ declare namespace ValAuthEngine {
         };
     }
 }
-declare const CONFIG_ClientVersion = "release-05.01-shipping-12-732296";
+declare const CONFIG_ClientVersion = "release-05.04-shipping-11-751550";
 declare const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom;
 declare const CONFIG_UserAgent = "RiotClient/53.0.0.4494832.4470164 %s (Windows;10;;Professional, x64)";
 declare const CONFIG_Ciphers: Array<string>;

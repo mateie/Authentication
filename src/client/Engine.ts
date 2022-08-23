@@ -62,7 +62,7 @@ namespace ValAuthEngine {
 
 //class
 
-const CONFIG_ClientVersion = `release-05.01-shipping-12-732296`;
+const CONFIG_ClientVersion = `release-05.04-shipping-11-751550`;
 const CONFIG_ClientPlatform: ValAuthEngine.ClientPlatfrom = {
     "platformType": `PC`,
     "platformOS": `Windows`,

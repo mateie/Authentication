@@ -5,7 +5,7 @@ exports.CONFIG_DEFAULT = exports.CONFIG_Ciphers = exports.CONFIG_UserAgent = exp
 const lib_1 = require("@valapi/lib");
 const tough_cookie_1 = require("tough-cookie");
 //class
-const CONFIG_ClientVersion = `release-05.01-shipping-12-732296`;
+const CONFIG_ClientVersion = `release-05.04-shipping-11-751550`;
 exports.CONFIG_ClientVersion = CONFIG_ClientVersion;
 const CONFIG_ClientPlatform = {
     "platformType": `PC`,
