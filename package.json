@@ -1,6 +1,6 @@
 {
   "name": "@valapi/auth",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Valorant API - Authentication",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
@@ -37,19 +37,19 @@
   },
   "homepage": "https://github.com/valapi/Authentication#readme",
   "dependencies": {
-    "@valapi/lib": "^1.4.2",
+    "@valapi/lib": "^1.4.3",
     "axios": "^0.27.2",
     "http-cookie-agent": "^4.0.2",
-    "tough-cookie": "^4.0.0"
+    "tough-cookie": "^4.1.2"
   },
   "devDependencies": {
-    "@types/node": "^18.7.11",
+    "@types/node": "^18.7.13",
     "@types/tough-cookie": "^4.0.2",
-    "@typescript-eslint/eslint-plugin": "^5.31.0",
-    "@typescript-eslint/parser": "^5.31.0",
-    "eslint": "^8.20.0",
+    "@typescript-eslint/eslint-plugin": "5.35.1",
+    "@typescript-eslint/parser": "5.35.1",
+    "eslint": "8.23.0",
     "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.2"
   },
   "directories": {
     "test": "test"
