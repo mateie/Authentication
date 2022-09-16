@@ -1,6 +1,6 @@
 {
   "name": "@valapi/auth",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Valorant API - Authentication",
   "main": "dist/index.js",
   "types": "./dist/index.d.ts",
