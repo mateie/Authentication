@@ -1,11 +1,12 @@
 //import
 
-import { ValAuthEngine } from "./Engine";
-import { CookieJar } from "tough-cookie";
+import { ValAuthEngine } from './Engine';
+import { CookieJar } from 'tough-cookie';
 
-import { ValAuthUser } from "../service/User";
-import { ValAuthMultifactor } from "../service/Multifactor";
-import { ValAuthCookie } from "../service/Cookie";
+import { ValAuthUser } from '../service/User';
+import { ValAuthMultifactor } from '../service/Multifactor';
+import { ValAuthCookie } from '../service/Cookie';
+import { ValError } from '../Error';
 
 //interface
 
@@ -13,37 +14,55 @@ namespace ValAuth {
     /**
      * Client Expire Event
      */
-    export type Expire = {
-        name: 'cookie';
-        data: {
-            jar: CookieJar,
-            ssid: string,
-        };
-    } | {
-        name: 'token';
-        data: {
-            access_token: string,
-            id_token: string,
-        };
-    };
+    export type Expire =
+        | {
+              name: 'cookie';
+              data: {
+                  jar: CookieJar;
+                  ssid: string;
+              };
+          }
+        | {
+              name: 'token';
+              data: {
+                  access_token: string;
+                  id_token: string;
+              };
+          };
 
     /**
      * Client Events
      */
     export interface Event {
-        'ready': () => void;
-        'expires': (data: ValAuth.Expire) => void;
-        'error': (data: { name: 'ValAuth_Error', message: string, data?: any }) => void;
+        ready: () => void;
+        expires: (data: ValAuth.Expire) => void;
+        error: (data: {
+            name: 'ValAuth_Error';
+            message: string;
+            data?: any;
+        }) => void;
     }
 }
 
 //event
 
 declare interface ValAuth {
-    emit<EventName extends keyof ValAuth.Event>(name: EventName, ...args: Parameters<ValAuth.Event[EventName]>): void;
-    on<EventName extends keyof ValAuth.Event>(name: EventName, callback: ValAuth.Event[EventName]): void;
-    once<EventName extends keyof ValAuth.Event>(name: EventName, callback: ValAuth.Event[EventName]): void;
-    off<EventName extends keyof ValAuth.Event>(name: EventName, callback?: ValAuth.Event[EventName]): void;
+    emit<EventName extends keyof ValAuth.Event>(
+        name: EventName,
+        ...args: Parameters<ValAuth.Event[EventName]>
+    ): void;
+    on<EventName extends keyof ValAuth.Event>(
+        name: EventName,
+        callback: ValAuth.Event[EventName]
+    ): void;
+    once<EventName extends keyof ValAuth.Event>(
+        name: EventName,
+        callback: ValAuth.Event[EventName]
+    ): void;
+    off<EventName extends keyof ValAuth.Event>(
+        name: EventName,
+        callback?: ValAuth.Event[EventName]
+    ): void;
 }
 
 //class
@@ -52,7 +71,6 @@ declare interface ValAuth {
  * Valorant Authentication
  */
 class ValAuth extends ValAuthEngine {
-
     /**
      * Create a new {@link ValAuth Client}
      * @param {ValAuthEngine.Options} options Client Config
@@ -84,7 +102,13 @@ class ValAuth extends ValAuthEngine {
                 this.emit('error', {
                     name: 'ValAuth_Error',
                     message: 'Login Error',
-                    data: ValUserAuth
+                    data: ValUserAuth,
+                });
+
+                throw new ValError({
+                    name: 'ValAuth_Error',
+                    message: 'Login Error',
+                    data: ValUserAuth,
                 });
             }
 
@@ -92,7 +116,12 @@ class ValAuth extends ValAuthEngine {
         } catch (error) {
             this.emit('error', {
                 name: 'ValAuth_Error',
-                message: String(error)
+                message: String(error),
+            });
+
+            throw new ValError({
+                name: 'ValAuth_Error',
+                message: String(error),
             });
         }
     }
@@ -109,13 +138,21 @@ class ValAuth extends ValAuthEngine {
         });
 
         try {
-            const ValMultifactorAuth = await ValMultifactor.TwoFactor(verificationCode);
+            const ValMultifactorAuth = await ValMultifactor.TwoFactor(
+                verificationCode
+            );
 
             if (ValMultifactorAuth.isError === true) {
                 this.emit('error', {
                     name: 'ValAuth_Error',
                     message: 'Multifactor Error',
-                    data: ValMultifactorAuth
+                    data: ValMultifactorAuth,
+                });
+
+                throw new ValError({
+                    name: 'ValAuth_Error',
+                    message: 'Multifactor Error',
+                    data: ValMultifactorAuth,
                 });
             }
 
@@ -123,7 +160,12 @@ class ValAuth extends ValAuthEngine {
         } catch (error) {
             this.emit('error', {
                 name: 'ValAuth_Error',
-                message: String(error)
+                message: String(error),
+            });
+
+            throw new ValError({
+                name: 'ValAuth_Error',
+                message: String(error),
             });
         }
     }
@@ -147,13 +189,16 @@ class ValAuth extends ValAuthEngine {
     public async refresh(force?: boolean): Promise<Array<ValAuth.Expire>> {
         const expiresList: Array<ValAuth.Expire> = [];
 
-        if ((new Date().getTime() + 10000) >= (this.createAt.cookie + Number(this.config.expiresIn?.cookie))) {
+        if (
+            new Date().getTime() + 10000 >=
+            this.createAt.cookie + Number(this.config.expiresIn?.cookie)
+        ) {
             //event
             const _event: ValAuth.Expire = {
-                name: "cookie",
+                name: 'cookie',
                 data: this.cookie,
             };
-            this.emit("expires", _event);
+            this.emit('expires', _event);
             expiresList.push(_event);
 
             //uptodate
@@ -162,16 +207,20 @@ class ValAuth extends ValAuthEngine {
             this.cookie.jar = new CookieJar();
         }
 
-        if ((new Date().getTime() + 10000) >= (this.createAt.token + Number(this.config.expiresIn?.token)) || force === true) {
+        if (
+            new Date().getTime() + 10000 >=
+                this.createAt.token + Number(this.config.expiresIn?.token) ||
+            force === true
+        ) {
             //event
             const _event: ValAuth.Expire = {
-                name: "token",
+                name: 'token',
                 data: {
                     access_token: this.access_token,
                     id_token: this.id_token,
                 },
             };
-            this.emit("expires", _event);
+            this.emit('expires', _event);
             expiresList.push(_event);
 
             if (!this.cookie.ssid) {
@@ -196,7 +245,13 @@ class ValAuth extends ValAuthEngine {
                     this.emit('error', {
                         name: 'ValAuth_Error',
                         message: 'Cookie Reauth Error',
-                        data: ValReAuth
+                        data: ValReAuth,
+                    });
+
+                    throw new ValError({
+                        name: 'ValAuth_Error',
+                        message: 'Cookie Reauth Error',
+                        data: ValReAuth,
                     });
                 }
 
@@ -204,7 +259,12 @@ class ValAuth extends ValAuthEngine {
             } catch (error) {
                 this.emit('error', {
                     name: 'ValAuth_Error',
-                    message: String(error)
+                    message: String(error),
+                });
+
+                throw new ValError({
+                    name: 'ValAuth_Error',
+                    message: String(error),
                 });
             }
         }
@@ -215,12 +275,15 @@ class ValAuth extends ValAuthEngine {
     //static
 
     /**
-     * 
+     *
      * @param {ValAuthEngine.Json} data {@link toJSON toJSON()} data
      * @param {ValAuthEngine.Options} options Client Config
      * @returns {ValAuth}
      */
-    public static fromJSON(data: ValAuthEngine.Json, options?: ValAuthEngine.Options): ValAuth {
+    public static fromJSON(
+        data: ValAuthEngine.Json,
+        options?: ValAuthEngine.Options
+    ): ValAuth {
         const RsoClient = new ValAuth(options);
         RsoClient.fromJSON(data);
 
@@ -233,7 +296,10 @@ class ValAuth extends ValAuthEngine {
      * @param {ValAuthEngine.Options} options Client Config
      * @returns {Promise<ValAuth>}
      */
-    public static async fromCookie(cookie: string, options?: ValAuthEngine.Options): Promise<ValAuth> {
+    public static async fromCookie(
+        cookie: string,
+        options?: ValAuthEngine.Options
+    ): Promise<ValAuth> {
         const RsoClient = new ValAuth(options);
         await RsoClient.fromCookie(cookie);
 
@@ -243,6 +309,4 @@ class ValAuth extends ValAuthEngine {
 
 //export
 
-export {
-    ValAuth
-};
+export { ValAuth };
